@@ -1,7 +1,7 @@
-use crate::HittableList;
 use crate::lerp;
 use crate::vector::*;
 use crate::HitRecord;
+use crate::HittableList;
 
 pub struct Ray {
     pub origin: Point,
@@ -17,11 +17,18 @@ impl Ray {
         self.origin + (self.direction * t)
     }
 
-    pub fn color(&self, world: &HittableList) -> Color {
+    pub fn color(&mut self, world: &HittableList, depth: i32) -> Color {
+        if depth <= 0 {
+            return Color::zero();
+        }
+
         let mut rec = HitRecord::default();
 
         if world.hit(self, 0.0, f32::MAX, &mut rec) {
-            return 0.5 * (rec.normal + Color::one());
+            let target = rec.p + rec.normal + Vec3::random_in_unit_sphere();
+            self.origin = rec.p;
+            self.direction = target - rec.p;
+            return 0.5 * self.color(world, depth - 1);
         }
 
         let normal_dir = self.direction.normalize();

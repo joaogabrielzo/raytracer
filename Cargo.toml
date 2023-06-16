@@ -12,7 +12,4 @@ opt-level = 1
 opt-level = 3
 
 [dependencies]
-bevy = "0.10.1"
-bevy_flycam = "0.10.1"
-bevy-inspector-egui = "0.18.3"
 rand = "0.8.4"

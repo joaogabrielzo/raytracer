@@ -10,6 +10,7 @@ fn main() {
     let width = 400;
     let height = (width as f32 / aspect_ratio) as u32;
     let samples_per_pixel = 100;
+    let max_depth = 50;
 
     // World
     let mut world = HittableList {
@@ -38,8 +39,8 @@ fn main() {
                 let u = (i as f32 + random_float(0.0, 1.0)) / (width as f32 - 1.0);
                 let v = (j as f32 + random_float(0.0, 1.0)) / (height as f32 - 1.0);
 
-                let ray = camera.get_ray(u, v);
-                color += ray.color(&world);
+                let mut ray = camera.get_ray(u, v);
+                color += ray.color(&world, max_depth);
             }
 
             write_color(color, samples_per_pixel as f32);
@@ -59,8 +60,8 @@ fn write_color(color: Color, samples_per_pixel: f32) {
 
     println!(
         "{} {} {}",
-        (256.0 * clamp(r, 0.0, 0.999)),
-        (256.0 * clamp(g, 0.0, 0.999)),
-        (256.0 * clamp(b, 0.0, 0.999))
+        (256.0 * clamp(r, 0.0, 0.999)) as i32,
+        (256.0 * clamp(g, 0.0, 0.999)) as i32,
+        (256.0 * clamp(b, 0.0, 0.999)) as i32
     )
 }

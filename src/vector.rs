@@ -1,6 +1,8 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub};
 
-#[derive(Clone, Copy, Default)]
+use crate::random_float;
+
+#[derive(Clone, Copy, Default, Debug)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
@@ -59,6 +61,33 @@ impl Vec3 {
             y: 0.0,
             z: 0.0,
         }
+    }
+
+    pub fn random() -> Vec3 {
+        Vec3 {
+            x: random_float(-1.0, 1.0),
+            y: random_float(-1.0, 1.0),
+            z: random_float(-1.0, 1.0),
+        }
+    }
+
+    pub fn random_in_unit_sphere() -> Vec3 {
+        let mut vec = Vec3::zero();
+
+        let mut inside_sphere = false;
+
+        while inside_sphere == false {
+            let p = Vec3::random();
+
+            if p.magnitude_squared() < 1.0 {
+                inside_sphere = true;
+                vec = p;
+            } else {
+                continue;
+            }
+        }
+
+        return vec;
     }
 }
 
