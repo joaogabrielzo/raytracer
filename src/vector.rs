@@ -47,6 +47,18 @@ impl Vec3 {
         }
     }
 
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+
+        (self.x.abs() < s) && (self.y.abs() < s) && (self.z.abs() < s)
+    }
+
+    pub fn reflect(&self, rhs: &Vec3) -> Vec3 {
+        let reflect_diretion = 2.0 * self.dot(rhs) * rhs;
+
+        *self - reflect_diretion
+    }
+
     pub fn one() -> Vec3 {
         Vec3 {
             x: 1.0,
@@ -88,6 +100,20 @@ impl Vec3 {
         }
 
         return vec;
+    }
+
+    pub fn random_unit_vector() -> Vec3 {
+        Vec3::random_in_unit_sphere().normalize()
+    }
+
+    pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
+        let in_unit_sphere = Self::random_in_unit_sphere();
+
+        if in_unit_sphere.dot(normal) > 0.0 {
+            return in_unit_sphere;
+        } else {
+            return in_unit_sphere * -1.0;
+        }
     }
 }
 
@@ -133,6 +159,18 @@ impl Sub<Vec3> for Vec3 {
     }
 }
 
+impl Sub<f32> for &Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, rhs: f32) -> Self::Output {
+        Vec3 {
+            x: self.x - rhs,
+            y: self.y - rhs,
+            z: self.z - rhs,
+        }
+    }
+}
+
 impl Mul<f32> for Vec3 {
     type Output = Vec3;
 
@@ -141,6 +179,30 @@ impl Mul<f32> for Vec3 {
             x: self.x * rhs,
             y: self.y * rhs,
             z: self.z * rhs,
+        }
+    }
+}
+
+impl Mul<&Vec3> for f32 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: &Vec3) -> Self::Output {
+        Vec3 {
+            x: self * rhs.x,
+            y: self * rhs.y,
+            z: self * rhs.z,
+        }
+    }
+}
+
+impl Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        Vec3 {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+            z: self.z * rhs.z,
         }
     }
 }

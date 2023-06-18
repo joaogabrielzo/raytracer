@@ -3,6 +3,7 @@ use crate::vector::*;
 use crate::HitRecord;
 use crate::HittableList;
 
+#[derive(Default)]
 pub struct Ray {
     pub origin: Point,
     pub direction: Vec3,
@@ -24,11 +25,13 @@ impl Ray {
 
         let mut rec = HitRecord::default();
 
-        if world.hit(self, 0.0, f32::MAX, &mut rec) {
-            let target = rec.p + rec.normal + Vec3::random_in_unit_sphere();
-            self.origin = rec.p;
-            self.direction = target - rec.p;
-            return 0.5 * self.color(world, depth - 1);
+        if world.hit(self, 0.001, f32::MAX, &mut rec) {
+            let mut attenuation = Color::default();
+            let mut scattered = Ray::default();
+            if rec.material.scatter(&self, &rec, &mut attenuation, &mut scattered) {
+                return attenuation * scattered.color(world, depth - 1);
+            }
+            return attenuation;
         }
 
         let normal_dir = self.direction.normalize();

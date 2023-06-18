@@ -1,8 +1,12 @@
 pub mod camera;
+pub mod material;
 pub mod ray;
 pub mod sphere;
 pub mod vector;
 
+use std::rc::Rc;
+
+use material::{Lambertian, Material};
 use ray::*;
 use vector::*;
 
@@ -22,12 +26,32 @@ pub fn clamp(x: f32, min: f32, max: f32) -> f32 {
     return x;
 }
 
-#[derive(Default, Clone, Copy)]
+pub fn random_float(min: f32, max: f32) -> f32 {
+    let random: f32 = rand::random();
+
+    min + (max - min) * random
+}
+
 pub struct HitRecord {
     pub p: Point,
     pub normal: Vec3,
     pub t: f32,
+    pub material: Rc<dyn Material>,
     pub front_face: bool,
+}
+
+impl Default for HitRecord {
+    fn default() -> Self {
+        Self {
+            p: Default::default(),
+            normal: Default::default(),
+            t: Default::default(),
+            material: Rc::new(Lambertian {
+                albedo: Color::new(0.4, 0.4, 0.9),
+            }),
+            front_face: Default::default(),
+        }
+    }
 }
 
 impl HitRecord {
@@ -74,13 +98,8 @@ impl HittableList {
         rec.normal = temp_rec.normal;
         rec.p = temp_rec.p;
         rec.t = temp_rec.t;
+        rec.material = temp_rec.material;
 
         hit_anything
     }
-}
-
-pub fn random_float(min: f32, max: f32) -> f32 {
-    let random: f32 = rand::random();
-
-    min + (max - min) * random
 }

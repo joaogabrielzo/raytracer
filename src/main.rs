@@ -1,5 +1,9 @@
+use std::rc::Rc;
+
 use raytracing::camera::Camera;
 use raytracing::clamp;
+use raytracing::material::Lambertian;
+use raytracing::material::Metal;
 use raytracing::random_float;
 use raytracing::sphere::Sphere;
 use raytracing::vector::*;
@@ -12,6 +16,20 @@ fn main() {
     let samples_per_pixel = 100;
     let max_depth = 50;
 
+    // Materials
+    let ground_material = Rc::new(Lambertian {
+        albedo: Vec3::new(0.8, 0.8, 0.0),
+    });
+    let center_material = Rc::new(Lambertian {
+        albedo: Vec3::new(0.7, 0.3, 0.3),
+    });
+    let left_material = Rc::new(Metal {
+        albedo: Color::new(0.8, 0.8, 0.8),
+    });
+    let right_material = Rc::new(Metal {
+        albedo: Color::new(0.8, 0.6, 0.2),
+    });
+
     // World
     let mut world = HittableList {
         objects: Vec::new(),
@@ -19,10 +37,22 @@ fn main() {
     world.add(Box::new(Sphere {
         center: Point::new(0.0, -100.5, -1.0),
         radius: 100.0,
+        material: ground_material,
     }));
     world.add(Box::new(Sphere {
         center: Point::new(0.0, 0.0, -1.0),
         radius: 0.5,
+        material: center_material,
+    }));
+    world.add(Box::new(Sphere {
+        center: Point::new(-1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: left_material,
+    }));
+    world.add(Box::new(Sphere {
+        center: Point::new(1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: right_material,
     }));
 
     // Camera
