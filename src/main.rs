@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use raytracing::camera::Camera;
 use raytracing::clamp;
+use raytracing::material::Dielectric;
 use raytracing::material::Lambertian;
 use raytracing::material::Metal;
 use raytracing::random_float;
@@ -20,12 +21,11 @@ fn main() {
     let ground_material = Rc::new(Lambertian {
         albedo: Vec3::new(0.8, 0.8, 0.0),
     });
-    let center_material = Rc::new(Lambertian {
-        albedo: Vec3::new(0.7, 0.3, 0.3),
+    let center_material = Rc::new(Dielectric{
+        refraction_index: 1.5,
     });
-    let left_material = Rc::new(Metal {
-        albedo: Color::new(0.8, 0.8, 0.8),
-        fuzz: 0.3,
+    let left_material = Rc::new(Dielectric{
+        refraction_index: 1.5,
     });
     let right_material = Rc::new(Metal {
         albedo: Color::new(0.8, 0.6, 0.2),

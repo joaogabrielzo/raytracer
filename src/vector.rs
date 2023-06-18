@@ -59,6 +59,16 @@ impl Vec3 {
         *self - reflect_diretion
     }
 
+    pub fn refract(&self, rhs: &Vec3, etai_over_etat: f32) -> Vec3 {
+        let negative_self = -1.0 * self;
+        let cos_theta = negative_self.dot(rhs).min(1.0);
+
+        let r_out_perpendicular = etai_over_etat * (self + cos_theta * rhs);
+        let r_out_parallel = ((1.0 - r_out_perpendicular.magnitude_squared()).abs().sqrt() * -1.0) * rhs;
+
+        r_out_perpendicular + r_out_parallel
+    }
+
     pub fn one() -> Vec3 {
         Vec3 {
             x: 1.0,
@@ -128,6 +138,18 @@ impl Into<Vec3> for (f32, f32, f32) {
 }
 
 impl Add<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn add(self, rhs: Vec3) -> Self::Output {
+        Vec3 {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
+        }
+    }
+}
+
+impl Add<Vec3> for &Vec3 {
     type Output = Vec3;
 
     fn add(self, rhs: Vec3) -> Self::Output {
