@@ -1,3 +1,4 @@
+use crate::random_float;
 use crate::ray::*;
 use crate::vector::*;
 use crate::HitRecord;
@@ -73,6 +74,16 @@ pub struct Dielectric {
     pub refraction_index: f32,
 }
 
+impl Dielectric {
+    fn reflectance(cosine: f32, ref_idx: f32) -> f32 {
+        let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+        r0 = r0 * r0;
+
+        r0 + (1.0 - r0) * (1.0 - cosine).powf(5.0)
+    }
+}
+
+#[allow(unused_assignments)]
 impl Material for Dielectric {
     fn scatter(
         &self,
@@ -92,10 +103,22 @@ impl Material for Dielectric {
         };
 
         let unit_direction = r_in.direction.normalize();
-        let refracted = unit_direction.refract(&rec.normal, refraction_ratio);
+        let negative_direction = -1.0 * unit_direction;
+        let cos_theta = negative_direction.dot(&rec.normal).min(1.0);
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+        let mut direction = Vec3::default();
+
+        if cannot_refract || Self::reflectance(cos_theta, refraction_ratio) > random_float(0.0, 1.0)
+        {
+            direction = unit_direction.reflect(&rec.normal);
+        } else {
+            direction = unit_direction.refract(&rec.normal, refraction_ratio);
+        }
 
         scattered.origin = rec.p;
-        scattered.direction = refracted;
+        scattered.direction = direction;
 
         true
     }

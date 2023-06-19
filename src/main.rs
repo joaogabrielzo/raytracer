@@ -21,15 +21,15 @@ fn main() {
     let ground_material = Rc::new(Lambertian {
         albedo: Vec3::new(0.8, 0.8, 0.0),
     });
-    let center_material = Rc::new(Dielectric{
-        refraction_index: 1.5,
+    let center_material = Rc::new(Lambertian {
+        albedo: Vec3::new(0.1, 0.2, 0.5),
     });
-    let left_material = Rc::new(Dielectric{
+    let left_material = Rc::new(Dielectric {
         refraction_index: 1.5,
     });
     let right_material = Rc::new(Metal {
         albedo: Color::new(0.8, 0.6, 0.2),
-        fuzz: 1.0,
+        fuzz: 0.0,
     });
 
     // World
@@ -49,6 +49,11 @@ fn main() {
     world.add(Box::new(Sphere {
         center: Point::new(-1.0, 0.0, -1.0),
         radius: 0.5,
+        material: left_material.clone(),
+    }));
+    world.add(Box::new(Sphere {
+        center: Point::new(-1.0, 0.0, -1.0),
+        radius: -0.4,
         material: left_material,
     }));
     world.add(Box::new(Sphere {
