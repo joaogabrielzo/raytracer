@@ -53,7 +53,7 @@ fn main() {
     }));
     world.add(Box::new(Sphere {
         center: Point::new(-1.0, 0.0, -1.0),
-        radius: -0.4,
+        radius: -0.45,
         material: left_material,
     }));
     world.add(Box::new(Sphere {
@@ -63,7 +63,13 @@ fn main() {
     }));
 
     // Camera
-    let camera = Camera::default();
+    let camera = Camera::new(
+        Point::new(-2.0, 2.0, 1.0),
+        Point::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        20.0,
+        aspect_ratio,
+    );
 
     println!("P3");
     println!("{width} {height}");
