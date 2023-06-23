@@ -28,7 +28,7 @@ impl Ray {
         if world.hit(self, 0.001, f32::MAX, &mut rec) {
             let mut attenuation = Color::default();
             let mut scattered = Ray::default();
-            if rec.material.scatter(&self, &rec, &mut attenuation, &mut scattered) {
+            if rec.material.scatter(self, &rec, &mut attenuation, &mut scattered) {
                 return attenuation * scattered.color(world, depth - 1);
             }
             return attenuation;
@@ -37,20 +37,20 @@ impl Ray {
         let normal_dir = self.direction.normalize();
         let t: f32 = 0.5 * (normal_dir.y + 1.0);
 
-        return lerp(t, Color::one(), Color::new(0.5, 0.7, 1.0));
+        lerp(t, Color::one(), Color::new(0.5, 0.7, 1.0))
     }
 
     pub fn hit_sphere(&self, center: &Point, radius: f32) -> f32 {
-        let oc = self.origin - center.clone();
+        let oc = self.origin - *center;
         let a = self.direction.magnitude_squared(); // self.direction.dot(&self.direction);
         let b = 2.0 * oc.dot(&self.direction);
         let c = /* oc.dot(&oc) */ oc.magnitude_squared()  - radius * radius;
         let discriminant = b * b - 4.0 * a * c;
 
         if discriminant < 0.0 {
-            return -1.0;
+            -1.0
         } else {
-            return (-b - discriminant.sqrt()) / (2.0 * a);
+            (-b - discriminant.sqrt()) / (2.0 * a)
         }
     }
 }

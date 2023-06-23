@@ -64,7 +64,8 @@ impl Vec3 {
         let cos_theta = negative_self.dot(rhs).min(1.0);
 
         let r_out_perpendicular = etai_over_etat * (self + cos_theta * rhs);
-        let r_out_parallel = ((1.0 - r_out_perpendicular.magnitude_squared()).abs().sqrt() * -1.0) * rhs;
+        let r_out_parallel =
+            ((1.0 - r_out_perpendicular.magnitude_squared()).abs().sqrt() * -1.0) * rhs;
 
         r_out_perpendicular + r_out_parallel
     }
@@ -93,12 +94,20 @@ impl Vec3 {
         }
     }
 
+    pub fn random_between(min: f32, max: f32) -> Vec3 {
+        Vec3 {
+            x: random_float(min, max),
+            y: random_float(min, max),
+            z: random_float(min, max),
+        }
+    }
+
     pub fn random_in_unit_sphere() -> Vec3 {
         let mut vec = Vec3::zero();
 
         let mut inside_sphere = false;
 
-        while inside_sphere == false {
+        while !inside_sphere {
             let p = Vec3::random();
 
             if p.magnitude_squared() < 1.0 {
@@ -109,7 +118,7 @@ impl Vec3 {
             }
         }
 
-        return vec;
+        vec
     }
 
     pub fn random_unit_vector() -> Vec3 {
@@ -120,19 +129,37 @@ impl Vec3 {
         let in_unit_sphere = Self::random_in_unit_sphere();
 
         if in_unit_sphere.dot(normal) > 0.0 {
-            return in_unit_sphere;
+            in_unit_sphere
         } else {
-            return in_unit_sphere * -1.0;
+            in_unit_sphere * -1.0
         }
+    }
+
+    pub fn random_in_unit_disk() -> Vec3 {
+        let mut vec = Vec3::default();
+        let mut inside_disk = true;
+
+        while inside_disk {
+            let p = Vec3::new(random_float(-1.0, 1.0), random_float(-1.0, 1.0), 0.0);
+
+            if p.magnitude_squared() < 1.0 {
+                inside_disk = false;
+                vec = p;
+            } else {
+                continue;
+            }
+        }
+
+        vec
     }
 }
 
-impl Into<Vec3> for (f32, f32, f32) {
-    fn into(self) -> Vec3 {
+impl From<(f32, f32, f32)> for Vec3 {
+    fn from(val: (f32, f32, f32)) -> Self {
         Vec3 {
-            x: self.0,
-            y: self.1,
-            z: self.2,
+            x: val.0,
+            y: val.1,
+            z: val.2,
         }
     }
 }

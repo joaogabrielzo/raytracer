@@ -1,74 +1,74 @@
-use std::rc::Rc;
-
 use raytracing::camera::Camera;
 use raytracing::clamp;
-use raytracing::material::Dielectric;
-use raytracing::material::Lambertian;
-use raytracing::material::Metal;
 use raytracing::random_float;
-use raytracing::sphere::Sphere;
+use raytracing::random_scene;
 use raytracing::vector::*;
-use raytracing::HittableList;
 
 fn main() {
-    let aspect_ratio = 16. / 9.;
-    let width = 400;
+    let aspect_ratio = 3. / 2.;
+    let width = 800;
     let height = (width as f32 / aspect_ratio) as u32;
     let samples_per_pixel = 100;
     let max_depth = 50;
 
     // Materials
-    let ground_material = Rc::new(Lambertian {
-        albedo: Vec3::new(0.8, 0.8, 0.0),
-    });
-    let center_material = Rc::new(Lambertian {
-        albedo: Vec3::new(0.1, 0.2, 0.5),
-    });
-    let left_material = Rc::new(Dielectric {
-        refraction_index: 1.5,
-    });
-    let right_material = Rc::new(Metal {
-        albedo: Color::new(0.8, 0.6, 0.2),
-        fuzz: 0.0,
-    });
+    // let ground_material = Rc::new(Lambertian {
+    //     albedo: Vec3::new(0.8, 0.8, 0.0),
+    // });
+    // let center_material = Rc::new(Lambertian {
+    //     albedo: Vec3::new(0.1, 0.2, 0.5),
+    // });
+    // let left_material = Rc::new(Dielectric {
+    //     refraction_index: 1.5,
+    // });
+    // let right_material = Rc::new(Metal {
+    //     albedo: Color::new(0.8, 0.6, 0.2),
+    //     fuzz: 0.0,
+    // });
 
     // World
-    let mut world = HittableList {
-        objects: Vec::new(),
-    };
-    world.add(Box::new(Sphere {
-        center: Point::new(0.0, -100.5, -1.0),
-        radius: 100.0,
-        material: ground_material,
-    }));
-    world.add(Box::new(Sphere {
-        center: Point::new(0.0, 0.0, -1.0),
-        radius: 0.5,
-        material: center_material,
-    }));
-    world.add(Box::new(Sphere {
-        center: Point::new(-1.0, 0.0, -1.0),
-        radius: 0.5,
-        material: left_material.clone(),
-    }));
-    world.add(Box::new(Sphere {
-        center: Point::new(-1.0, 0.0, -1.0),
-        radius: -0.45,
-        material: left_material,
-    }));
-    world.add(Box::new(Sphere {
-        center: Point::new(1.0, 0.0, -1.0),
-        radius: 0.5,
-        material: right_material,
-    }));
+    let world = random_scene();
+    // world.add(Box::new(Sphere {
+    //     center: Point::new(0.0, -100.5, -1.0),
+    //     radius: 100.0,
+    //     material: ground_material,
+    // }));
+    // world.add(Box::new(Sphere {
+    //     center: Point::new(0.0, 0.0, -1.0),
+    //     radius: 0.5,
+    //     material: center_material,
+    // }));
+    // world.add(Box::new(Sphere {
+    //     center: Point::new(-1.0, 0.0, -1.0),
+    //     radius: 0.5,
+    //     material: left_material.clone(),
+    // }));
+    // world.add(Box::new(Sphere {
+    //     center: Point::new(-1.0, 0.0, -1.0),
+    //     radius: -0.45,
+    //     material: left_material,
+    // }));
+    // world.add(Box::new(Sphere {
+    //     center: Point::new(1.0, 0.0, -1.0),
+    //     radius: 0.5,
+    //     material: right_material,
+    // }));
+
+    let look_from = Point::new(13.0, 2.0, 3.0);
+    let look_at = Point::new(0.0, 0.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
 
     // Camera
     let camera = Camera::new(
-        Point::new(-2.0, 2.0, 1.0),
-        Point::new(0.0, 0.0, -1.0),
-        Vec3::new(0.0, 1.0, 0.0),
+        look_from,
+        look_at,
+        vup,
         20.0,
         aspect_ratio,
+        aperture,
+        dist_to_focus,
     );
 
     println!("P3");

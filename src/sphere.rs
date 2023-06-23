@@ -10,7 +10,7 @@ pub struct Sphere {
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let oc = ray.origin - self.center.clone();
+        let oc = ray.origin - self.center;
         let a = ray.direction.magnitude_squared();
         let b = 2.0 * oc.dot(&ray.direction);
         let c = oc.magnitude_squared() - self.radius * self.radius;
