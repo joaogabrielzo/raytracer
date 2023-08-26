@@ -1,5 +1,5 @@
 [package]
-name = "raytracing"
+name = "raytracer"
 version = "0.1.0"
 edition = "2021"
 
@@ -13,3 +13,4 @@ opt-level = 3
 
 [dependencies]
 rand = "0.8.4"
+rayon = "1.7.0"

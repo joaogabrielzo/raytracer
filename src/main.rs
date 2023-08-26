@@ -1,110 +1,80 @@
-use raytracing::camera::Camera;
-use raytracing::clamp;
-use raytracing::random_float;
-use raytracing::random_scene;
-use raytracing::vector::*;
+use raytracer::{
+    dot,
+    ray::Ray,
+    vector::{Color, Point, Vector3},
+};
 
 fn main() {
-    let aspect_ratio = 3. / 2.;
-    let width = 800;
-    let height = (width as f32 / aspect_ratio) as u32;
-    let samples_per_pixel = 100;
-    let max_depth = 50;
-
-    // Materials
-    // let ground_material = Rc::new(Lambertian {
-    //     albedo: Vec3::new(0.8, 0.8, 0.0),
-    // });
-    // let center_material = Rc::new(Lambertian {
-    //     albedo: Vec3::new(0.1, 0.2, 0.5),
-    // });
-    // let left_material = Rc::new(Dielectric {
-    //     refraction_index: 1.5,
-    // });
-    // let right_material = Rc::new(Metal {
-    //     albedo: Color::new(0.8, 0.6, 0.2),
-    //     fuzz: 0.0,
-    // });
-
-    // World
-    let world = random_scene();
-    // world.add(Box::new(Sphere {
-    //     center: Point::new(0.0, -100.5, -1.0),
-    //     radius: 100.0,
-    //     material: ground_material,
-    // }));
-    // world.add(Box::new(Sphere {
-    //     center: Point::new(0.0, 0.0, -1.0),
-    //     radius: 0.5,
-    //     material: center_material,
-    // }));
-    // world.add(Box::new(Sphere {
-    //     center: Point::new(-1.0, 0.0, -1.0),
-    //     radius: 0.5,
-    //     material: left_material.clone(),
-    // }));
-    // world.add(Box::new(Sphere {
-    //     center: Point::new(-1.0, 0.0, -1.0),
-    //     radius: -0.45,
-    //     material: left_material,
-    // }));
-    // world.add(Box::new(Sphere {
-    //     center: Point::new(1.0, 0.0, -1.0),
-    //     radius: 0.5,
-    //     material: right_material,
-    // }));
-
-    let look_from = Point::new(13.0, 2.0, 3.0);
-    let look_at = Point::new(0.0, 0.0, 0.0);
-    let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = 10.0;
-    let aperture = 0.1;
+    let aspect_ratio = 16.0 / 9.0;
+    let image_width = 400;
+    let f32_width = image_width as f32;
+    let image_height = (f32_width / aspect_ratio) as i32;
+    let f32_height = image_height as f32;
 
     // Camera
-    let camera = Camera::new(
-        look_from,
-        look_at,
-        vup,
-        20.0,
-        aspect_ratio,
-        aperture,
-        dist_to_focus,
-    );
+    let focal_length = 1.0;
+    let viewport_height = 2.0;
+    let viewport_width = viewport_height * aspect_ratio;
+    let camera_center = Point::zero();
+
+    // Calculate the vectors across the horizontal and down the vertical viewport edges.
+    let viewport_u = Vector3::new(viewport_width, 0.0, 0.0);
+    let viewport_v = Vector3::new(0.0, -viewport_height, 0.0);
+
+    // Calculate the horizontal and vertical delta vectors from pixel to pixel.
+    let pixel_delta_u = viewport_u / f32_width;
+    let pixel_delta_v = viewport_v / f32_height;
+
+    // Calculate the location of the upper left pixel.
+    let viewport_upper_left =
+        camera_center - Vector3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+    let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
     println!("P3");
-    println!("{width} {height}");
+    println!("{} {}", image_width, image_height);
     println!("255");
 
-    for j in (0..height).rev() {
-        for i in 0..width {
-            let mut color = Color::zero();
-            for _ in 0..samples_per_pixel {
-                let u = (i as f32 + random_float(0.0, 1.0)) / (width as f32 - 1.0);
-                let v = (j as f32 + random_float(0.0, 1.0)) / (height as f32 - 1.0);
+    for v in 0..image_height {
+        for u in 0..image_width {
+            let pixel_center =
+                pixel00_loc + (u as f32 * pixel_delta_u) + (v as f32 * pixel_delta_v);
+            let ray_direction = pixel_center - camera_center;
+            let ray = Ray::new(camera_center, ray_direction);
 
-                let mut ray = camera.get_ray(u, v);
-                color += ray.color(&world, max_depth);
-            }
+            let pixel_color = ray_color(&ray);
 
-            write_color(color, samples_per_pixel as f32);
+            pixel_color.write();
         }
     }
 }
 
-fn write_color(color: Color, samples_per_pixel: f32) {
-    let mut r = color.x;
-    let mut g = color.y;
-    let mut b = color.z;
+fn ray_color(ray: &Ray) -> Color {
+    let t = hit_sphere(&Point::new(0.0, 0.0, -1.0), 0.5, ray);
 
-    let scale = 1.0 / samples_per_pixel;
-    r = (scale * r).sqrt();
-    g = (scale * g).sqrt();
-    b = (scale * b).sqrt();
+    if t > 0.0 {
+        let n = (ray.at(t) - Vector3::new(0.0, 0.0, -1.0)).unit();
+        return 0.5 * Color::new(n.x + 1.0, n.y + 1.0, n.z + 1.0);
+    }
 
-    println!(
-        "{} {} {}",
-        (256.0 * clamp(r, 0.0, 0.999)) as i32,
-        (256.0 * clamp(g, 0.0, 0.999)) as i32,
-        (256.0 * clamp(b, 0.0, 0.999)) as i32
-    )
+    let unit_direction = ray.direction.unit();
+    let a = 0.5 * (unit_direction.y + 1.0);
+
+    // LERP -> (1 - a) * startValue + a * endValue
+    (1.0 - a) * Color::from_one(1.0) + a * Color::new(0.5, 0.7, 1.0)
+}
+
+fn hit_sphere(center: &Point, radius: f32, ray: &Ray) -> f32 {
+    let oc = ray.origin - center;
+    // quadratic equation
+    let a = dot(&ray.direction, &ray.direction); //a vector dotted with itself is equal to the squared length of that vector.
+    let b = 2.0 * dot(&oc, &ray.direction);
+    let c = dot(&oc, &oc) - radius * radius;
+    let discriminant = b * b - 4.0 * a * c;
+
+    if discriminant < 0.0 {
+        return -1.0;
+    }
+
+    return (-b - discriminant.sqrt()) // Quadratic formula
+                  / (2.0 * a);
 }

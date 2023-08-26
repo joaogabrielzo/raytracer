@@ -1,293 +1,172 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
-use crate::random_float;
-
-#[derive(Clone, Copy, Default, Debug)]
-pub struct Vec3 {
+#[derive(Copy, Clone, Debug)]
+#[repr(C)]
+pub struct Vector3 {
     pub x: f32,
     pub y: f32,
     pub z: f32,
 }
-
-pub type Color = Vec3;
-pub type Point = Vec3;
-
-impl Vec3 {
+impl Vector3 {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self { x, y, z }
     }
 
-    pub fn magnitude(&self) -> f32 {
-        self.magnitude_squared().sqrt()
+    pub fn zero() -> Vector3 {
+        Vector3::from_one(0.0)
     }
 
-    pub fn magnitude_squared(&self) -> f32 {
+    pub fn from_one(v: f32) -> Vector3 {
+        Vector3 { x: v, y: v, z: v }
+    }
+
+    pub fn length(&self) -> f32 {
+        self.norm().sqrt()
+    }
+
+    pub fn unit(&self) -> Vector3 {
+        self / self.length()
+    }
+
+    pub fn norm(&self) -> f32 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    pub fn normalize(&self) -> Vec3 {
-        let mag = self.magnitude();
-
-        Vec3 {
-            x: self.x / mag,
-            y: self.y / mag,
-            z: self.z / mag,
+    pub fn normalize(&self) -> Vector3 {
+        let inv_len = self.length().recip();
+        Vector3 {
+            x: self.x * inv_len,
+            y: self.y * inv_len,
+            z: self.z * inv_len,
         }
     }
 
-    pub fn dot(&self, rhs: &Vec3) -> f32 {
-        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
+    pub fn dot(&self, other: &Vector3) -> f32 {
+        self.x * other.x + self.y * other.y + self.z * other.z
     }
 
-    pub fn cross(&self, rhs: &Vec3) -> Vec3 {
-        Vec3 {
-            x: self.y * rhs.z - self.z * rhs.y,
-            y: self.z * rhs.x - self.x * rhs.z,
-            z: self.x * rhs.y - self.y * rhs.x,
-        }
-    }
-
-    pub fn near_zero(&self) -> bool {
-        let s = 1e-8;
-
-        (self.x.abs() < s) && (self.y.abs() < s) && (self.z.abs() < s)
-    }
-
-    pub fn reflect(&self, rhs: &Vec3) -> Vec3 {
-        let reflect_diretion = 2.0 * self.dot(rhs) * rhs;
-
-        *self - reflect_diretion
-    }
-
-    pub fn refract(&self, rhs: &Vec3, etai_over_etat: f32) -> Vec3 {
-        let negative_self = -1.0 * self;
-        let cos_theta = negative_self.dot(rhs).min(1.0);
-
-        let r_out_perpendicular = etai_over_etat * (self + cos_theta * rhs);
-        let r_out_parallel =
-            ((1.0 - r_out_perpendicular.magnitude_squared()).abs().sqrt() * -1.0) * rhs;
-
-        r_out_perpendicular + r_out_parallel
-    }
-
-    pub fn one() -> Vec3 {
-        Vec3 {
-            x: 1.0,
-            y: 1.0,
-            z: 1.0,
-        }
-    }
-
-    pub fn zero() -> Vec3 {
-        Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        }
-    }
-
-    pub fn random() -> Vec3 {
-        Vec3 {
-            x: random_float(-1.0, 1.0),
-            y: random_float(-1.0, 1.0),
-            z: random_float(-1.0, 1.0),
-        }
-    }
-
-    pub fn random_between(min: f32, max: f32) -> Vec3 {
-        Vec3 {
-            x: random_float(min, max),
-            y: random_float(min, max),
-            z: random_float(min, max),
-        }
-    }
-
-    pub fn random_in_unit_sphere() -> Vec3 {
-        let mut vec = Vec3::zero();
-
-        let mut inside_sphere = false;
-
-        while !inside_sphere {
-            let p = Vec3::random();
-
-            if p.magnitude_squared() < 1.0 {
-                inside_sphere = true;
-                vec = p;
-            } else {
-                continue;
-            }
-        }
-
-        vec
-    }
-
-    pub fn random_unit_vector() -> Vec3 {
-        Vec3::random_in_unit_sphere().normalize()
-    }
-
-    pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
-        let in_unit_sphere = Self::random_in_unit_sphere();
-
-        if in_unit_sphere.dot(normal) > 0.0 {
-            in_unit_sphere
-        } else {
-            in_unit_sphere * -1.0
-        }
-    }
-
-    pub fn random_in_unit_disk() -> Vec3 {
-        let mut vec = Vec3::default();
-        let mut inside_disk = true;
-
-        while inside_disk {
-            let p = Vec3::new(random_float(-1.0, 1.0), random_float(-1.0, 1.0), 0.0);
-
-            if p.magnitude_squared() < 1.0 {
-                inside_disk = false;
-                vec = p;
-            } else {
-                continue;
-            }
-        }
-
-        vec
-    }
-}
-
-impl From<(f32, f32, f32)> for Vec3 {
-    fn from(val: (f32, f32, f32)) -> Self {
-        Vec3 {
-            x: val.0,
-            y: val.1,
-            z: val.2,
+    pub fn cross(&self, other: &Vector3) -> Vector3 {
+        Vector3 {
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y * other.x,
         }
     }
 }
 
-impl Add<Vec3> for Vec3 {
-    type Output = Vec3;
+impl Add for Vector3 {
+    type Output = Vector3;
 
-    fn add(self, rhs: Vec3) -> Self::Output {
-        Vec3 {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z,
+    fn add(self, other: Vector3) -> Vector3 {
+        Vector3 {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
         }
     }
 }
 
-impl Add<Vec3> for &Vec3 {
-    type Output = Vec3;
+impl Sub for Vector3 {
+    type Output = Vector3;
 
-    fn add(self, rhs: Vec3) -> Self::Output {
-        Vec3 {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z,
+    fn sub(self, other: Vector3) -> Vector3 {
+        Vector3 {
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z,
         }
     }
 }
 
-impl AddAssign<Vec3> for Vec3 {
-    fn add_assign(&mut self, rhs: Vec3) {
-        self.x += rhs.x;
-        self.y += rhs.y;
-        self.z += rhs.z;
-    }
-}
+impl Sub<&Vector3> for Vector3 {
+    type Output = Vector3;
 
-impl Sub<Vec3> for Vec3 {
-    type Output = Vec3;
-
-    fn sub(self, rhs: Vec3) -> Self::Output {
-        Vec3 {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-            z: self.z - rhs.z,
+    fn sub(self, other: &Vector3) -> Vector3 {
+        Vector3 {
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z,
         }
     }
 }
 
-impl Sub<f32> for &Vec3 {
-    type Output = Vec3;
+impl Mul for Vector3 {
+    type Output = Vector3;
 
-    fn sub(self, rhs: f32) -> Self::Output {
-        Vec3 {
-            x: self.x - rhs,
-            y: self.y - rhs,
-            z: self.z - rhs,
+    fn mul(self, other: Vector3) -> Vector3 {
+        Vector3 {
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z,
         }
     }
 }
 
-impl Mul<f32> for Vec3 {
-    type Output = Vec3;
+impl Mul<f32> for Vector3 {
+    type Output = Vector3;
 
-    fn mul(self, rhs: f32) -> Self::Output {
-        Vec3 {
-            x: self.x * rhs,
-            y: self.y * rhs,
-            z: self.z * rhs,
+    fn mul(self, other: f32) -> Vector3 {
+        Vector3 {
+            x: self.x * other,
+            y: self.y * other,
+            z: self.z * other,
         }
     }
 }
 
-impl Mul<&Vec3> for f32 {
-    type Output = Vec3;
+impl Div<f32> for Vector3 {
+    type Output = Vector3;
 
-    fn mul(self, rhs: &Vec3) -> Self::Output {
-        Vec3 {
-            x: self * rhs.x,
-            y: self * rhs.y,
-            z: self * rhs.z,
+    fn div(self, other: f32) -> Vector3 {
+        Vector3 {
+            x: self.x / other,
+            y: self.y / other,
+            z: self.z / other,
         }
     }
 }
 
-impl Mul<Vec3> for Vec3 {
-    type Output = Vec3;
+impl Div<f32> for &Vector3 {
+    type Output = Vector3;
 
-    fn mul(self, rhs: Vec3) -> Self::Output {
-        Vec3 {
-            x: self.x * rhs.x,
-            y: self.y * rhs.y,
-            z: self.z * rhs.z,
+    fn div(self, other: f32) -> Vector3 {
+        Vector3 {
+            x: self.x / other,
+            y: self.y / other,
+            z: self.z / other,
         }
     }
 }
 
-impl Mul<Vec3> for f32 {
-    type Output = Vec3;
+impl Mul<Vector3> for f32 {
+    type Output = Vector3;
 
-    fn mul(self, rhs: Vec3) -> Self::Output {
-        rhs * self
+    fn mul(self, other: Vector3) -> Vector3 {
+        other * self
     }
 }
 
-impl MulAssign<f32> for Vec3 {
-    fn mul_assign(&mut self, rhs: f32) {
-        self.x *= rhs;
-        self.y *= rhs;
-        self.z *= rhs;
-    }
-}
+impl Neg for Vector3 {
+    type Output = Vector3;
 
-impl Div<f32> for Vec3 {
-    type Output = Vec3;
-
-    fn div(self, rhs: f32) -> Self::Output {
-        Vec3 {
-            x: self.x / rhs,
-            y: self.y / rhs,
-            z: self.z / rhs,
+    fn neg(self) -> Vector3 {
+        Vector3 {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
         }
     }
 }
 
-impl DivAssign<f32> for Vec3 {
-    fn div_assign(&mut self, rhs: f32) {
-        self.x /= rhs;
-        self.y /= rhs;
-        self.z /= rhs;
+pub type Point = Vector3;
+pub type Color = Vector3;
+
+impl Color {
+    pub fn write(&self) {
+        let r = (255.999 * self.x) as i32;
+        let g = (255.999 * self.y) as i32;
+        let b = (255.999 * self.z) as i32;
+
+        println!("{} {} {}", r, g, b);
     }
 }
