@@ -1,4 +1,6 @@
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
+
+use crate::interval::Interval;
 
 #[derive(Copy, Clone, Debug, Default)]
 #[repr(C)]
@@ -63,6 +65,14 @@ impl Add for Vector3 {
             y: self.y + other.y,
             z: self.z + other.z,
         }
+    }
+}
+
+impl AddAssign for Vector3 {
+    fn add_assign(&mut self, rhs: Self) {
+        self.x = self.x + rhs.x;
+        self.y = self.y + rhs.y;
+        self.z = self.z + rhs.z;
     }
 }
 
@@ -162,11 +172,19 @@ pub type Point = Vector3;
 pub type Color = Vector3;
 
 impl Color {
-    pub fn write(&self) {
-        let r = (255.999 * self.x) as i32;
-        let g = (255.999 * self.y) as i32;
-        let b = (255.999 * self.z) as i32;
+    pub fn write(&self, samples_per_pixel: f32) {
+        let scale = 1.0 / samples_per_pixel;
+        let r = scale * self.x;
+        let g = scale * self.y;
+        let b = scale * self.z;
 
-        println!("{} {} {}", r, g, b);
+        let intensity = Interval::new(0.0, 0.999);
+
+        println!(
+            "{} {} {}",
+            (256.0 * intensity.clamp(r)) as u32,
+            (256.0 * intensity.clamp(g)) as u32,
+            (256.0 * intensity.clamp(b)) as u32
+        );
     }
 }

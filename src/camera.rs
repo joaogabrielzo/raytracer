@@ -1,4 +1,5 @@
 use crate::{
+    random,
     ray::Ray,
     shape::{HitRecord, Hittable, HittableList},
     vector::{Color, Point, Vector3},
@@ -8,6 +9,7 @@ pub struct Camera {
     pub aspect_ratio: f32,
     pub image_width: u32,
     pub image_height: u32,
+    pub samples_per_pixel: u32,
     pub center: Point,
     pub pixel00_loc: Point,
     pub pixel_delta_u: Vector3,
@@ -15,27 +17,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn render(&self, world: &HittableList) {
-        println!("P3");
-        println!("{} {}", self.image_width, self.image_height);
-        println!("255");
-
-        for v in 0..self.image_height {
-            for u in 0..self.image_width {
-                let pixel_center = self.pixel00_loc
-                    + (u as f32 * self.pixel_delta_u)
-                    + (v as f32 * self.pixel_delta_v);
-                let ray_direction = pixel_center - self.center;
-                let ray = Ray::new(self.center, ray_direction);
-
-                let pixel_color = Self::ray_color(&ray, &world);
-
-                pixel_color.write();
-            }
-        }
-    }
-
-    pub fn new(aspect_ratio: f32, image_width: u32) -> Camera {
+    pub fn new(aspect_ratio: f32, image_width: u32, samples_per_pixel: u32) -> Camera {
         let f32_width = image_width as f32;
         let image_height = (f32_width / aspect_ratio) as u32;
         let f32_height = image_height as f32;
@@ -63,11 +45,48 @@ impl Camera {
             aspect_ratio,
             image_width,
             image_height,
+            samples_per_pixel,
             center,
             pixel00_loc,
             pixel_delta_u,
             pixel_delta_v,
         }
+    }
+
+    pub fn render(&self, world: &HittableList) {
+        println!("P3");
+        println!("{} {}", self.image_width, self.image_height);
+        println!("255");
+
+        for v in 0..self.image_height {
+            for u in 0..self.image_width {
+                let mut pixel_color = Color::zero();
+                for _ in 0..self.samples_per_pixel {
+                    let ray = self.get_ray(u, v);
+
+                    pixel_color += Self::ray_color(&ray, &world);
+                }
+
+                pixel_color.write(self.samples_per_pixel as f32);
+            }
+        }
+    }
+
+    fn get_ray(&self, u: u32, v: u32) -> Ray {
+        let pixel_center =
+            self.pixel00_loc + (u as f32 * self.pixel_delta_u) + (v as f32 * self.pixel_delta_v);
+        let pixel_sample = pixel_center + self.pixel_sample_square();
+
+        let ray_direction = pixel_sample - self.center;
+
+        Ray::new(self.center, ray_direction)
+    }
+
+    fn pixel_sample_square(&self) -> Vector3 {
+        let px = -0.5 + random();
+        let py = -0.5 + random();
+
+        (self.pixel_delta_u * px) + (self.pixel_delta_v * py)
     }
 
     fn ray_color(ray: &Ray, world: &HittableList) -> Color {
