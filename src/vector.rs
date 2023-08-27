@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
 
-use crate::interval::Interval;
+use crate::{interval::Interval, random, random_rng};
 
 #[derive(Copy, Clone, Debug, Default)]
 #[repr(C)]
@@ -23,14 +23,14 @@ impl Vector3 {
     }
 
     pub fn length(&self) -> f32 {
-        self.norm().sqrt()
+        self.length_squared().sqrt()
     }
 
     pub fn unit(&self) -> Vector3 {
         self / self.length()
     }
 
-    pub fn norm(&self) -> f32 {
+    pub fn length_squared(&self) -> f32 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
@@ -52,6 +52,43 @@ impl Vector3 {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
             z: self.x * other.y - self.y * other.x,
+        }
+    }
+
+    pub fn random() -> Vector3 {
+        Vector3::new(random(), random(), random())
+    }
+
+    pub fn random_rng(min: f32, max: f32) -> Vector3 {
+        Vector3::new(
+            random_rng(min, max),
+            random_rng(min, max),
+            random_rng(min, max),
+        )
+    }
+
+    #[inline(always)]
+    fn random_in_unit_sphere() -> Vector3 {
+        loop {
+            let p = Self::random_rng(-1.0, 1.0);
+            if p.length_squared() < 1.0 {
+                return p;
+            }
+        }
+    }
+
+    #[inline(always)]
+    pub fn random_unit_vector() -> Vector3 {
+        Self::random_in_unit_sphere().unit()
+    }
+
+    #[inline(always)]
+    pub fn random_on_hemisphere(normal: &Vector3) -> Vector3 {
+        let on_unit_sphere = Self::random_unit_vector();
+        if on_unit_sphere.dot(normal) > 0.0 {
+            return on_unit_sphere;
+        } else {
+            return -on_unit_sphere;
         }
     }
 }
@@ -174,9 +211,9 @@ pub type Color = Vector3;
 impl Color {
     pub fn write(&self, samples_per_pixel: f32) {
         let scale = 1.0 / samples_per_pixel;
-        let r = scale * self.x;
-        let g = scale * self.y;
-        let b = scale * self.z;
+        let r = Self::linear_to_gamma(scale * self.x);
+        let g = Self::linear_to_gamma(scale * self.y);
+        let b = Self::linear_to_gamma(scale * self.z);
 
         let intensity = Interval::new(0.0, 0.999);
 
@@ -186,5 +223,10 @@ impl Color {
             (256.0 * intensity.clamp(g)) as u32,
             (256.0 * intensity.clamp(b)) as u32
         );
+    }
+
+    #[inline(always)]
+    fn linear_to_gamma(linear_component: f32) -> f32 {
+        linear_component.sqrt()
     }
 }

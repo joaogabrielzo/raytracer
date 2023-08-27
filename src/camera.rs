@@ -10,6 +10,7 @@ pub struct Camera {
     pub image_width: u32,
     pub image_height: u32,
     pub samples_per_pixel: u32,
+    pub max_depth: u32,
     pub center: Point,
     pub pixel00_loc: Point,
     pub pixel_delta_u: Vector3,
@@ -17,7 +18,12 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: f32, image_width: u32, samples_per_pixel: u32) -> Camera {
+    pub fn new(
+        aspect_ratio: f32,
+        image_width: u32,
+        samples_per_pixel: u32,
+        max_depth: u32,
+    ) -> Camera {
         let f32_width = image_width as f32;
         let image_height = (f32_width / aspect_ratio) as u32;
         let f32_height = image_height as f32;
@@ -46,6 +52,7 @@ impl Camera {
             image_width,
             image_height,
             samples_per_pixel,
+            max_depth,
             center,
             pixel00_loc,
             pixel_delta_u,
@@ -64,7 +71,7 @@ impl Camera {
                 for _ in 0..self.samples_per_pixel {
                     let ray = self.get_ray(u, v);
 
-                    pixel_color += Self::ray_color(&ray, &world);
+                    pixel_color += Self::ray_color(&ray, &world, self.max_depth);
                 }
 
                 pixel_color.write(self.samples_per_pixel as f32);
@@ -89,11 +96,16 @@ impl Camera {
         (self.pixel_delta_u * px) + (self.pixel_delta_v * py)
     }
 
-    fn ray_color(ray: &Ray, world: &HittableList) -> Color {
+    fn ray_color(ray: &Ray, world: &HittableList, depth: u32) -> Color {
         let mut rec = HitRecord::default();
 
-        if world.hit(ray, &(0.0, f32::MAX).into(), &mut rec) {
-            return 0.5 * (rec.normal + Color::from_one(1.0));
+        if depth == 0 {
+            return Color::zero();
+        }
+
+        if world.hit(ray, &(0.001, f32::MAX).into(), &mut rec) {
+            let direction = rec.normal + Vector3::random_unit_vector();
+            return 0.5 * Self::ray_color(&Ray::new(rec.p, direction), world, depth - 1);
         }
 
         let unit_direction = ray.direction.unit();
