@@ -9,22 +9,22 @@ pub trait Material: Sync {
     fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color)>;
 }
 
-pub enum MaterialType {
+pub enum Surface {
     Diffuse(Diffuse),
     Reflective(Metal),
 }
 
-impl Default for MaterialType {
+impl Default for Surface {
     fn default() -> Self {
-        MaterialType::Diffuse(Diffuse::default())
+        Surface::Diffuse(Diffuse::default())
     }
 }
 
-impl Material for MaterialType {
+impl Material for Surface {
     fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color)> {
         match self {
-            MaterialType::Diffuse(ref d) => d.scatter(ray_in, rec),
-            MaterialType::Reflective(ref m) => m.scatter(ray_in, rec),
+            Surface::Diffuse(ref d) => d.scatter(ray_in, rec),
+            Surface::Reflective(ref m) => m.scatter(ray_in, rec),
         }
     }
 }

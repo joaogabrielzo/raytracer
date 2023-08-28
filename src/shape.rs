@@ -1,7 +1,7 @@
 use crate::{
     dot,
     interval::Interval,
-    material::MaterialType,
+    material::Surface,
     ray::Ray,
     vector::{Point, Vector3},
 };
@@ -9,11 +9,11 @@ use crate::{
 pub struct Sphere {
     pub center: Point,
     pub radius: f32,
-    pub material: MaterialType,
+    pub material: Surface,
 }
 
 impl Sphere {
-    pub fn new(center: Point, radius: f32, material: MaterialType) -> Self {
+    pub fn new(center: Point, radius: f32, material: Surface) -> Self {
         Self {
             center,
             radius,
@@ -30,18 +30,12 @@ pub struct HitRecord<'a> {
     pub p: Point,
     pub normal: Vector3,
     pub t: f32,
-    pub material: &'a MaterialType,
+    pub material: &'a Surface,
     pub front_face: bool,
 }
 
 impl<'a> HitRecord<'a> {
-    pub fn new(
-        p: Point,
-        normal: Vector3,
-        t: f32,
-        material: &'a MaterialType,
-        front_face: bool,
-    ) -> Self {
+    pub fn new(p: Point, normal: Vector3, t: f32, material: &'a Surface, front_face: bool) -> Self {
         Self {
             p,
             normal,
@@ -63,7 +57,7 @@ impl<'a> HitRecord<'a> {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Sync {
     fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord>;
 }
 
