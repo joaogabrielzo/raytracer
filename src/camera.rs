@@ -1,7 +1,8 @@
 use crate::{
+    material::Material,
     random,
     ray::Ray,
-    shape::{HitRecord, Hittable, HittableList},
+    shape::{Hittable, HittableList},
     vector::{Color, Point, Vector3},
 };
 
@@ -65,18 +66,18 @@ impl Camera {
         println!("{} {}", self.image_width, self.image_height);
         println!("255");
 
-        for v in 0..self.image_height {
-            for u in 0..self.image_width {
-                let mut pixel_color = Color::zero();
-                for _ in 0..self.samples_per_pixel {
-                    let ray = self.get_ray(u, v);
-
-                    pixel_color += Self::ray_color(&ray, &world, self.max_depth);
-                }
+        (0..self.image_height).for_each(|v| {
+            (0..self.image_width).for_each(|u| {
+                let pixel_color: Color = (0..self.samples_per_pixel)
+                    .map(|_| {
+                        let ray = self.get_ray(u, v);
+                        Self::ray_color(&ray, &world, self.max_depth)
+                    })
+                    .fold(Color::zero(), |a, b| a + b);
 
                 pixel_color.write(self.samples_per_pixel as f32);
-            }
-        }
+            })
+        });
     }
 
     fn get_ray(&self, u: u32, v: u32) -> Ray {
@@ -97,15 +98,15 @@ impl Camera {
     }
 
     fn ray_color(ray: &Ray, world: &HittableList, depth: u32) -> Color {
-        let mut rec = HitRecord::default();
-
         if depth == 0 {
             return Color::zero();
         }
 
-        if world.hit(ray, &(0.001, f32::MAX).into(), &mut rec) {
-            let direction = rec.normal + Vector3::random_unit_vector();
-            return 0.5 * Self::ray_color(&Ray::new(rec.p, direction), world, depth - 1);
+        if let Some(rec) = world.hit(ray, &(0.001, f32::MAX).into()) {
+            if let Some((scattered, attenuation)) = rec.material.scatter(ray, &rec) {
+                return attenuation * Self::ray_color(&scattered, world, depth - 1);
+            };
+            return Color::zero();
         }
 
         let unit_direction = ray.direction.unit();

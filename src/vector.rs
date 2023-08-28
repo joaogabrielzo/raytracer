@@ -9,6 +9,9 @@ pub struct Vector3 {
     pub y: f32,
     pub z: f32,
 }
+
+unsafe impl Sync for Vector3 {}
+
 impl Vector3 {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self { x, y, z }
@@ -91,6 +94,11 @@ impl Vector3 {
             return -on_unit_sphere;
         }
     }
+
+    pub fn near_zero(&self) -> bool {
+        let s = 1.0 * 10.0f32.powf(-8.0);
+        (self.x < s) && (self.y < s) && (self.z < s)
+    }
 }
 
 impl Add for Vector3 {
@@ -114,6 +122,18 @@ impl AddAssign for Vector3 {
 }
 
 impl Sub for Vector3 {
+    type Output = Vector3;
+
+    fn sub(self, other: Vector3) -> Vector3 {
+        Vector3 {
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z,
+        }
+    }
+}
+
+impl Sub<Vector3> for &Vector3 {
     type Output = Vector3;
 
     fn sub(self, other: Vector3) -> Vector3 {
@@ -150,6 +170,18 @@ impl Mul for Vector3 {
 }
 
 impl Mul<f32> for Vector3 {
+    type Output = Vector3;
+
+    fn mul(self, other: f32) -> Vector3 {
+        Vector3 {
+            x: self.x * other,
+            y: self.y * other,
+            z: self.z * other,
+        }
+    }
+}
+
+impl Mul<f32> for &Vector3 {
     type Output = Vector3;
 
     fn mul(self, other: f32) -> Vector3 {
@@ -227,6 +259,8 @@ impl Color {
 
     #[inline(always)]
     fn linear_to_gamma(linear_component: f32) -> f32 {
-        linear_component.sqrt()
+        linear_component.powf(1.0 / GAMMA) // == sqrt(linear_component)
     }
 }
+
+const GAMMA: f32 = 2.2;

@@ -1,7 +1,8 @@
 use raytracer::{
     camera::Camera,
+    material::{Diffuse, MaterialType, Metal},
     shape::{Element, HittableList, Sphere},
-    vector::Point,
+    vector::{Color, Point},
 };
 
 fn main() {
@@ -12,14 +13,31 @@ fn main() {
 
     let camera = Camera::new(aspect_ratio, image_width, samples_per_pixel, max_depth);
 
+    let material_ground = MaterialType::Diffuse(Diffuse::new(Color::new(0.8, 0.8, 0.0)));
+    let material_center = MaterialType::Diffuse(Diffuse::new(Color::new(0.7, 0.3, 0.3)));
+    let material_left = MaterialType::Reflective(Metal::new(Color::new(0.8, 0.8, 0.8)));
+    let material_right = MaterialType::Reflective(Metal::new(Color::new(0.8, 0.6, 0.2)));
+
     let mut world = HittableList::default();
     world.add(Element::Sphere(Sphere::new(
         Point::new(0.0, -100.5, -1.0),
         100.0,
+        material_ground,
+    )));
+    world.add(Element::Sphere(Sphere::new(
+        Point::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left,
+    )));
+    world.add(Element::Sphere(Sphere::new(
+        Point::new(1.0, 0.0, -1.0),
+        0.5,
+        material_right,
     )));
     world.add(Element::Sphere(Sphere::new(
         Point::new(0.0, 0.0, -1.0),
         0.5,
+        material_center,
     )));
 
     camera.render(&world);
