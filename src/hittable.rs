@@ -2,8 +2,7 @@ use crate::{
     interval::Interval,
     material::Surface,
     ray::Ray,
-    shape::Element,
-    vector::{Point, Vector3},
+    vector::{Point, Vector3}, shape::Element,
 };
 
 pub struct HitRecord<'a> {
