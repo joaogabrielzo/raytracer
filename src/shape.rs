@@ -1,5 +1,6 @@
 use crate::{
     dot,
+    hittable::{HitRecord, Hittable},
     interval::Interval,
     material::Surface,
     ray::Ray,
@@ -18,53 +19,6 @@ impl Sphere {
             center,
             radius,
             material,
-        }
-    }
-}
-
-pub enum Element {
-    Sphere(Sphere),
-}
-
-pub struct HitRecord<'a> {
-    pub p: Point,
-    pub normal: Vector3,
-    pub t: f32,
-    pub material: &'a Surface,
-    pub front_face: bool,
-}
-
-impl<'a> HitRecord<'a> {
-    pub fn new(p: Point, normal: Vector3, t: f32, material: &'a Surface, front_face: bool) -> Self {
-        Self {
-            p,
-            normal,
-            t,
-            material,
-            front_face,
-        }
-    }
-
-    /// Sets the hit record normal vector.
-    /// NOTE: the parameter `outward_normal` is assumed to have unit length.
-    pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: &Vector3) {
-        self.front_face = ray.direction.dot(outward_normal) < 0.0;
-        if self.front_face {
-            self.normal = *outward_normal
-        } else {
-            self.normal = -(*outward_normal)
-        }
-    }
-}
-
-pub trait Hittable: Sync {
-    fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord>;
-}
-
-impl Hittable for Element {
-    fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
-        match *self {
-            Element::Sphere(ref s) => s.hit(ray, ray_t),
         }
     }
 }
@@ -96,41 +50,18 @@ impl Hittable for Sphere {
         let outward_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(ray, &outward_normal);
 
-        return Some(rec);
+        Some(rec)
     }
 }
 
-#[derive(Default)]
-pub struct HittableList {
-    pub objects: Vec<Element>,
+pub enum Element {
+    Sphere(Sphere),
 }
 
-impl HittableList {
-    pub fn new(objects: Vec<Element>) -> Self {
-        Self { objects }
-    }
-
-    pub fn clear(&mut self) {
-        self.objects.clear()
-    }
-
-    pub fn add(&mut self, el: Element) {
-        self.objects.push(el)
-    }
-}
-
-impl Hittable for HittableList {
+impl Hittable for Element {
     fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
-        let mut rec = None;
-        let mut closest_so_far = ray_t.max;
-
-        self.objects.iter().for_each(|e| {
-            if let Some(hit) = e.hit(ray, ray_t) {
-                closest_so_far = hit.t;
-                rec = Some(hit);
-            }
-        });
-
-        return rec;
+        match *self {
+            Element::Sphere(ref s) => s.hit(ray, ray_t),
+        }
     }
 }

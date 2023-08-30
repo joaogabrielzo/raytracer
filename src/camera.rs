@@ -2,7 +2,7 @@ use crate::{
     material::Material,
     random,
     ray::Ray,
-    shape::{Hittable, HittableList},
+    hittable::{Hittable, HittableList},
     vector::{Color, Point, Vector3},
 };
 
@@ -71,7 +71,7 @@ impl Camera {
                 let pixel_color: Color = (0..self.samples_per_pixel)
                     .map(|_| {
                         let ray = self.get_ray(u, v);
-                        Self::ray_color(&ray, &world, self.max_depth)
+                        Self::ray_color(&ray, world, self.max_depth)
                     })
                     .sum();
 

@@ -21,11 +21,11 @@ impl Interval {
     }
 }
 
-impl Into<Interval> for (f32, f32) {
-    fn into(self) -> Interval {
+impl From<(f32, f32)> for Interval {
+    fn from(val: (f32, f32)) -> Self {
         Interval {
-            min: self.0,
-            max: self.1,
+            min: val.0,
+            max: val.1,
         }
     }
 }

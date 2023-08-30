@@ -1,7 +1,7 @@
 use crate::{
+    hittable::HitRecord,
     ray::Ray,
     reflect_ray,
-    shape::HitRecord,
     vector::{Color, Vector3},
 };
 
@@ -48,7 +48,7 @@ impl Material for Diffuse {
         }
 
         let scattered = Ray::new(rec.p, scatter_direction);
-        return Some((scattered, self.albedo));
+        Some((scattered, self.albedo))
     }
 }
 
@@ -67,6 +67,6 @@ impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color)> {
         let reflected = reflect_ray(&ray_in.direction, &rec.normal);
         let scattered = Ray::new(rec.p, reflected);
-        return Some((scattered, self.albedo));
+        Some((scattered, self.albedo))
     }
 }

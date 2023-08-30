@@ -7,6 +7,7 @@ pub mod material;
 pub mod ray;
 pub mod shape;
 pub mod vector;
+pub mod hittable;
 
 pub fn dot(fst: &Vector3, snd: &Vector3) -> f32 {
     fst.dot(snd)

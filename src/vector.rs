@@ -98,9 +98,9 @@ impl Vector3 {
     pub fn random_on_hemisphere(normal: &Vector3) -> Vector3 {
         let on_unit_sphere = Self::random_unit_vector();
         if on_unit_sphere.dot(normal) > 0.0 {
-            return on_unit_sphere;
+            on_unit_sphere
         } else {
-            return -on_unit_sphere;
+            -on_unit_sphere
         }
     }
 

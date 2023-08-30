@@ -1,7 +1,8 @@
 use raytracer::{
     camera::Camera,
+    hittable::HittableList,
     material::{Diffuse, Metal, Surface},
-    shape::{Element, HittableList, Sphere},
+    shape::{Element, Sphere},
     vector::{Color, Point},
 };
 
