@@ -1,4 +1,7 @@
-use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
+use std::{
+    iter::Sum,
+    ops::{Add, AddAssign, Div, Mul, Neg, Sub},
+};
 
 use crate::{interval::Interval, random, random_rng};
 
@@ -11,6 +14,12 @@ pub struct Vector3 {
 }
 
 unsafe impl Sync for Vector3 {}
+
+impl Sum for Vector3 {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Vector3::zero(), |a, b| a + b)
+    }
+}
 
 impl Vector3 {
     pub fn new(x: f32, y: f32, z: f32) -> Self {

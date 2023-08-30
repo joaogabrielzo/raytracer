@@ -73,7 +73,7 @@ impl Camera {
                         let ray = self.get_ray(u, v);
                         Self::ray_color(&ray, &world, self.max_depth)
                     })
-                    .fold(Color::zero(), |a, b| a + b);
+                    .sum();
 
                 pixel_color.write(self.samples_per_pixel as f32);
             })
