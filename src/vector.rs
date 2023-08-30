@@ -95,12 +95,12 @@ impl Vector3 {
     }
 
     #[inline(always)]
-    pub fn random_on_hemisphere(normal: &Vector3) -> Vector3 {
-        let on_unit_sphere = Self::random_unit_vector();
-        if on_unit_sphere.dot(normal) > 0.0 {
-            on_unit_sphere
-        } else {
-            -on_unit_sphere
+    pub fn random_in_unit_disk() -> Vector3 {
+        loop {
+            let p = Vector3::new(random_rng(-1.0, 1.0), random_rng(-1.0, 1.0), 0.0);
+            if p.length_squared() < 1.0 {
+                return p;
+            }
         }
     }
 

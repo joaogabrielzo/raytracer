@@ -17,6 +17,9 @@ fn main() {
     let look_at = Point::new(0.0, 0.0, -1.0);
     let view_up = Vector3::new(0.0, 1.0, 0.0);
 
+    let defocus_angle = 10.0;
+    let focus_dist = 3.4;
+
     let camera = Camera::new(
         aspect_ratio,
         image_width,
@@ -26,6 +29,8 @@ fn main() {
         look_from,
         look_at,
         view_up,
+        defocus_angle,
+        focus_dist,
     );
 
     let material_ground = Surface::Diffuse(Diffuse::new(Color::new(0.8, 0.8, 0.0)));
