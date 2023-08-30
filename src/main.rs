@@ -16,8 +16,14 @@ fn main() {
 
     let material_ground = Surface::Diffuse(Diffuse::new(Color::new(0.8, 0.8, 0.0)));
     let material_center = Surface::Diffuse(Diffuse::new(Color::new(0.7, 0.3, 0.3)));
-    let material_left = Surface::Reflective(Metal::new(Color::new(0.8, 0.8, 0.8)));
-    let material_right = Surface::Reflective(Metal::new(Color::new(0.8, 0.6, 0.2)));
+    let material_left = Surface::Reflective({
+        let albedo = Color::new(0.8, 0.8, 0.8);
+        Metal { albedo, fuzz: 0.3 }
+    });
+    let material_right = Surface::Reflective({
+        let albedo = Color::new(0.8, 0.6, 0.2);
+        Metal { albedo, fuzz: 1.0 }
+    });
 
     let mut world = HittableList::default();
     world.add(Element::Sphere(Sphere::new(

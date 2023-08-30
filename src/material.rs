@@ -1,4 +1,5 @@
 use crate::{
+    dot,
     hittable::HitRecord,
     ray::Ray,
     reflect_ray,
@@ -55,18 +56,25 @@ impl Material for Diffuse {
 #[derive(Default)]
 pub struct Metal {
     pub albedo: Color,
+    pub fuzz: f32,
 }
 
 impl Metal {
-    pub fn new(albedo: Color) -> Self {
-        Self { albedo }
+    pub fn new(albedo: Color, fuzz: f32) -> Self {
+        let fuzz = fuzz.min(1.0);
+        Self { albedo, fuzz }
     }
 }
 
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color)> {
         let reflected = reflect_ray(&ray_in.direction, &rec.normal);
-        let scattered = Ray::new(rec.p, reflected);
-        Some((scattered, self.albedo))
+        let scattered = Ray::new(rec.p, reflected + self.fuzz * Vector3::random_unit_vector());
+
+        if dot(&scattered.direction, &rec.normal) > 0.0 {
+            Some((scattered, self.albedo))
+        } else {
+            None
+        }
     }
 }
