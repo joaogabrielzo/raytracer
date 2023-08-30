@@ -79,7 +79,7 @@ impl Vector3 {
         )
     }
 
-    #[inline(always)]
+    #[inline]
     fn random_in_unit_sphere() -> Vector3 {
         loop {
             let p = Self::random_rng(-1.0, 1.0);
@@ -89,12 +89,12 @@ impl Vector3 {
         }
     }
 
-    #[inline(always)]
+    #[inline]
     pub fn random_unit_vector() -> Vector3 {
         Self::random_in_unit_sphere().unit()
     }
 
-    #[inline(always)]
+    #[inline]
     pub fn random_in_unit_disk() -> Vector3 {
         loop {
             let p = Vector3::new(random_rng(-1.0, 1.0), random_rng(-1.0, 1.0), 0.0);
@@ -290,7 +290,7 @@ impl Color {
         );
     }
 
-    #[inline(always)]
+    #[inline]
     fn linear_to_gamma(linear_component: f32) -> f32 {
         linear_component.powf(1.0 / GAMMA) // == sqrt(linear_component)
     }

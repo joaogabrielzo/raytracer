@@ -19,17 +19,17 @@ pub fn random_rng(min: f32, max: f32) -> f32 {
     rng.gen_range(min..=max)
 }
 
-#[inline(always)]
+#[inline]
 pub fn random() -> f32 {
     random_rng(0.0, 1.0)
 }
 
-#[inline(always)]
+#[inline]
 pub fn reflect_ray(v: &Vector3, n: &Vector3) -> Vector3 {
     v - n * 2.0 * dot(v, n)
 }
 
-#[inline(always)]
+#[inline]
 pub fn refract_ray(uv: &Vector3, n: &Vector3, etai_over_etat: f32) -> Vector3 {
     let cos_theta = f32::min(dot(&-uv, n), 1.0);
     let r_out_perp = etai_over_etat * (n * cos_theta + uv);
