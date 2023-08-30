@@ -3,16 +3,30 @@ use raytracer::{
     hittable::HittableList,
     material::{Dielectric, Diffuse, Metal, Surface},
     shape::{Element, Sphere},
-    vector::{Color, Point},
+    vector::{Color, Point, Vector3},
 };
 
 fn main() {
     let aspect_ratio = 16.0 / 9.0;
+    let fov = 20.0;
     let image_width = 400;
     let samples_per_pixel = 100;
     let max_depth = 50;
 
-    let camera = Camera::new(aspect_ratio, image_width, samples_per_pixel, max_depth);
+    let look_from = Point::new(-2.0, 2.0, 1.0);
+    let look_at = Point::new(0.0, 0.0, -1.0);
+    let view_up = Vector3::new(0.0, 1.0, 0.0);
+
+    let camera = Camera::new(
+        aspect_ratio,
+        image_width,
+        samples_per_pixel,
+        max_depth,
+        fov,
+        look_from,
+        look_at,
+        view_up,
+    );
 
     let material_ground = Surface::Diffuse(Diffuse::new(Color::new(0.8, 0.8, 0.0)));
     let material_center = Surface::Diffuse(Diffuse::new(Color::new(0.1, 0.2, 0.5)));
