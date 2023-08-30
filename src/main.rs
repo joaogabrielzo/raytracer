@@ -1,7 +1,7 @@
 use raytracer::{
     camera::Camera,
     hittable::HittableList,
-    material::{Diffuse, Metal, Surface},
+    material::{Dielectric, Diffuse, Metal, Surface},
     shape::{Element, Sphere},
     vector::{Color, Point},
 };
@@ -15,14 +15,11 @@ fn main() {
     let camera = Camera::new(aspect_ratio, image_width, samples_per_pixel, max_depth);
 
     let material_ground = Surface::Diffuse(Diffuse::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Surface::Diffuse(Diffuse::new(Color::new(0.7, 0.3, 0.3)));
-    let material_left = Surface::Reflective({
-        let albedo = Color::new(0.8, 0.8, 0.8);
-        Metal { albedo, fuzz: 0.3 }
-    });
+    let material_center = Surface::Diffuse(Diffuse::new(Color::new(0.1, 0.2, 0.5)));
+    let material_left = Surface::Refractive(Dielectric::new(1.5));
     let material_right = Surface::Reflective({
         let albedo = Color::new(0.8, 0.6, 0.2);
-        Metal { albedo, fuzz: 1.0 }
+        Metal { albedo, fuzz: 0.0 }
     });
 
     let mut world = HittableList::default();
@@ -34,6 +31,11 @@ fn main() {
     world.add(Element::Sphere(Sphere::new(
         Point::new(-1.0, 0.0, -1.0),
         0.5,
+        material_left.clone(),
+    )));
+    world.add(Element::Sphere(Sphere::new(
+        Point::new(-1.0, 0.0, -1.0),
+        -0.4,
         material_left,
     )));
     world.add(Element::Sphere(Sphere::new(

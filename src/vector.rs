@@ -122,6 +122,18 @@ impl Add for Vector3 {
     }
 }
 
+impl Add<&Vector3> for Vector3 {
+    type Output = Vector3;
+
+    fn add(self, other: &Vector3) -> Vector3 {
+        Vector3 {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
+        }
+    }
+}
+
 impl AddAssign for Vector3 {
     fn add_assign(&mut self, rhs: Self) {
         self.x = self.x + rhs.x;
@@ -246,6 +258,18 @@ impl Neg for Vector3 {
     }
 }
 
+impl Neg for &Vector3 {
+    type Output = Vector3;
+
+    fn neg(self) -> Vector3 {
+        Vector3 {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
+    }
+}
+
 pub type Point = Vector3;
 pub type Color = Vector3;
 
@@ -269,6 +293,14 @@ impl Color {
     #[inline(always)]
     fn linear_to_gamma(linear_component: f32) -> f32 {
         linear_component.powf(1.0 / GAMMA) // == sqrt(linear_component)
+    }
+
+    pub fn white() -> Color {
+        Color::from_one(1.0)
+    }
+
+    pub fn black() -> Color {
+        Color::zero()
     }
 }
 

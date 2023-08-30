@@ -2,7 +2,8 @@ use crate::{
     interval::Interval,
     material::Surface,
     ray::Ray,
-    vector::{Point, Vector3}, shape::Element,
+    shape::Element,
+    vector::{Point, Vector3},
 };
 
 pub struct HitRecord<'a> {
@@ -65,7 +66,7 @@ impl Hittable for HittableList {
         let mut closest_so_far = ray_t.max;
 
         self.objects.iter().for_each(|e| {
-            if let Some(hit) = e.hit(ray, ray_t) {
+            if let Some(hit) = e.hit(ray, &Interval::new(ray_t.min, closest_so_far)) {
                 closest_so_far = hit.t;
                 rec = Some(hit);
             }

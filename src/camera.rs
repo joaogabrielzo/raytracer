@@ -1,8 +1,8 @@
 use crate::{
+    hittable::{Hittable, HittableList},
     material::Material,
     random,
     ray::Ray,
-    hittable::{Hittable, HittableList},
     vector::{Color, Point, Vector3},
 };
 
@@ -99,20 +99,20 @@ impl Camera {
 
     fn ray_color(ray: &Ray, world: &HittableList, depth: u32) -> Color {
         if depth == 0 {
-            return Color::zero();
+            return Color::black();
         }
 
         if let Some(rec) = world.hit(ray, &(0.001, f32::MAX).into()) {
             if let Some((scattered, attenuation)) = rec.material.scatter(ray, &rec) {
                 return attenuation * Self::ray_color(&scattered, world, depth - 1);
             };
-            return Color::zero();
+            return Color::black();
         }
 
         let unit_direction = ray.direction.unit();
         let a = 0.5 * (unit_direction.y + 1.0);
 
         // LERP -> (1 - a) * startValue + a * endValue
-        (1.0 - a) * Color::from_one(1.0) + a * Color::new(0.5, 0.7, 1.0)
+        (1.0 - a) * Color::white() + a * Color::new(0.5, 0.7, 1.0)
     }
 }
