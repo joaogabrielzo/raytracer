@@ -28,7 +28,13 @@ fn main() {
                 if choose_material < 0.8 {
                     let albedo = Color::random() * Color::random();
                     sphere_material = Surface::Diffuse(Diffuse::new(albedo));
-                    world.add(Element::Sphere(Sphere::new(center, 0.2, sphere_material)));
+                    let center2 = center + Vector3::new(0.0, random_rng(0.0, 0.5), 0.0);
+                    world.add(Element::Sphere(Sphere::new_moving(
+                        center,
+                        center2,
+                        0.2,
+                        sphere_material,
+                    )));
                 } else if choose_material < 0.95 {
                     let albedo = Color::random_rng(0.5, 1.0);
                     let fuzz = random_rng(0.0, 0.5);
@@ -64,8 +70,8 @@ fn main() {
     )));
 
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 600;
-    let samples_per_pixel = 10;
+    let image_width = 400;
+    let samples_per_pixel = 100;
     let max_depth = 50;
 
     let fov = 20.0;

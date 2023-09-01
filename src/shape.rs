@@ -12,6 +12,8 @@ pub struct Sphere {
     pub radius: f32,
     pub radius_squared: f32,
     pub material: Surface,
+    pub is_moving: bool,
+    pub center_vec: Point,
 }
 
 impl Sphere {
@@ -21,13 +23,35 @@ impl Sphere {
             radius,
             radius_squared: radius * radius,
             material,
+            is_moving: false,
+            center_vec: center,
         }
+    }
+
+    pub fn new_moving(center1: Point, center2: Point, radius: f32, material: Surface) -> Self {
+        Self {
+            center: center1,
+            radius,
+            radius_squared: radius * radius,
+            material,
+            is_moving: true,
+            center_vec: center2 - center1,
+        }
+    }
+
+    pub fn center(&self, time: f32) -> Point {
+        return self.center + self.center_vec * time;
     }
 }
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
-        let oc = ray.origin - self.center;
+        let center = if self.is_moving {
+            self.center(ray.time)
+        } else {
+            self.center
+        };
+        let oc = ray.origin - center;
         let a = dot(&ray.direction, &ray.direction); //a vector dotted with itself is equal to the squared length of that vector.
         let b = 2.0 * dot(&oc, &ray.direction);
         let c = dot(&oc, &oc) - self.radius_squared;
@@ -49,7 +73,7 @@ impl Hittable for Sphere {
 
         let mut rec = HitRecord::new(ray.at(root), Vector3::zero(), root, &self.material, false);
 
-        let outward_normal = (rec.p - self.center) / self.radius;
+        let outward_normal = (rec.p - center) / self.radius;
         rec.set_face_normal(ray, &outward_normal);
 
         return Some(rec);
