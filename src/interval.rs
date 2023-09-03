@@ -17,7 +17,7 @@ impl Interval {
     }
 
     pub fn clamp(&self, x: f32) -> f32 {
-        x.min(1.0).max(0.0)
+        x.min(self.max).max(self.min)
     }
 }
 

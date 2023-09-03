@@ -1,5 +1,10 @@
+use indicatif::ParallelProgressIterator;
+use itertools::Itertools;
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
+
 use crate::{
     hittable::{Hittable, HittableList},
+    interval::Interval,
     material::Material,
     random,
     ray::Ray,
@@ -87,18 +92,49 @@ impl Camera {
         println!("{} {}", self.image_width, self.image_height);
         println!("255");
 
-        (0..self.image_height).for_each(|v| {
-            (0..self.image_width).for_each(|u| {
+        let pixels = (0..self.image_height)
+            .cartesian_product(0..self.image_width)
+            .collect::<Vec<(u32, u32)>>()
+            .into_par_iter()
+            .progress_count((self.image_height * self.image_width) as u64)
+            .map(|(v, u)| {
+                let scale_factor = (self.samples_per_pixel as f32).recip();
+
                 let pixel_color: Color = (0..self.samples_per_pixel)
                     .map(|_| {
                         let ray = self.get_ray(u, v);
                         Self::ray_color(&ray, world, self.max_depth)
                     })
-                    .sum();
+                    .sum::<Vector3>()
+                    * scale_factor;
 
-                pixel_color.write(self.samples_per_pixel as f32);
+                let intensity = Interval::new(0.0, 0.999);
+
+                let color = Vector3::new(
+                    256.0 * intensity.clamp(pixel_color.x),
+                    256.0 * intensity.clamp(pixel_color.y),
+                    256.0 * intensity.clamp(pixel_color.z),
+                );
+
+                format!("{} {} {}", color.x as u32, color.y as u32, color.z as u32)
             })
-        });
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        println!("{pixels}");
+
+        // (0..self.image_height).for_each(|v| {
+        //     (0..self.image_width).for_each(|u| {
+        //         let pixel_color: Color = (0..self.samples_per_pixel)
+        //             .map(|_| {
+        //                 let ray = self.get_ray(u, v);
+        //                 Self::ray_color(&ray, world, self.max_depth)
+        //             })
+        //             .sum();
+
+        //         pixel_color.write(self.samples_per_pixel as f32);
+        //     })
+        // });
     }
 
     fn get_ray(&self, u: u32, v: u32) -> Ray {
