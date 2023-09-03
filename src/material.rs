@@ -4,6 +4,7 @@ use crate::{
     random,
     ray::Ray,
     reflect_ray, refract_ray,
+    texture::Texture,
     vector::{Color, Vector3},
 };
 
@@ -34,13 +35,19 @@ impl Material for Surface {
     }
 }
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct Diffuse {
-    pub albedo: Color,
+    pub albedo: Texture,
+}
+
+impl Default for Diffuse {
+    fn default() -> Self {
+        Diffuse::new(Texture::SolidColor(Color::white()))
+    }
 }
 
 impl Diffuse {
-    pub fn new(albedo: Color) -> Self {
+    pub fn new(albedo: Texture) -> Self {
         Self { albedo }
     }
 }
@@ -53,7 +60,7 @@ impl Material for Diffuse {
         }
 
         let scattered = Ray::new(rec.p, scatter_direction, ray_in.time);
-        Some((scattered, self.albedo))
+        Some((scattered, self.albedo.color(rec.u, rec.v, rec.p)))
     }
 }
 

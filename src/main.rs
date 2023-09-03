@@ -4,12 +4,18 @@ use raytracer::{
     material::{Dielectric, Diffuse, Metal, Surface},
     random, random_rng,
     shape::{Element, Sphere},
+    texture::Texture,
     vector::{Color, Point, Vector3},
 };
 
 #[allow(unused_assignments)]
 fn main() {
-    let material_ground = Surface::Diffuse(Diffuse::new(Color::new(0.5, 0.5, 0.5)));
+    let checker = Texture::Checkered {
+        even: Color::new(0.2, 0.3, 0.1),
+        odd: Color::from_one(0.9),
+        scale: 0.32,
+    };
+    let material_ground = Surface::Diffuse(Diffuse::new(checker));
     let mut world = HittableList::default();
     world.add(Element::Sphere(Sphere::new(
         Point::new(0.0, -1000.0, 0.0),
@@ -26,7 +32,7 @@ fn main() {
                 let mut sphere_material = Surface::Diffuse(Diffuse::default());
 
                 if choose_material < 0.8 {
-                    let albedo = Color::random() * Color::random();
+                    let albedo = Texture::SolidColor(Color::random() * Color::random());
                     sphere_material = Surface::Diffuse(Diffuse::new(albedo));
                     let center2 = center + Vector3::new(0.0, random_rng(0.0, 0.5), 0.0);
                     world.add(Element::Sphere(Sphere::new_moving(
@@ -55,7 +61,8 @@ fn main() {
         material_one,
     )));
 
-    let material_two = Surface::Diffuse(Diffuse::new(Color::new(0.4, 0.2, 0.1)));
+    let material_two =
+        Surface::Diffuse(Diffuse::new(Texture::SolidColor(Color::new(0.4, 0.2, 0.1))));
     world.add(Element::Sphere(Sphere::new(
         Point::new(-4.0, 1.0, 0.0),
         1.0,

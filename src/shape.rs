@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use crate::{
     dot,
     hittable::{HitRecord, Hittable},
@@ -42,6 +44,22 @@ impl Sphere {
     pub fn center(&self, time: f32) -> Point {
         return self.center + self.center_vec * time;
     }
+
+    fn get_sphere_uv(&self, p: Vector3) -> (f32, f32) {
+        // p: a given point on the sphere of radius one, centered at the origin.
+        // u: returned value [0,1] of angle around the Y axis from X=-1.
+        // v: returned value [0,1] of angle from Y=-1 to Y=+1.
+        //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+        //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+        //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+
+        let theta = (-p.y).acos();
+        let phi = (-p.z).atan2(p.x) + PI;
+
+        let u = phi / (2. * PI);
+        let v = theta / PI;
+        (u, v)
+    }
 }
 
 impl Hittable for Sphere {
@@ -71,9 +89,12 @@ impl Hittable for Sphere {
             }
         }
 
-        let mut rec = HitRecord::new(ray.at(root), Vector3::zero(), root, &self.material, false);
+        let point = ray.at(root);
+        let outward_normal = (point - center) / self.radius;
 
-        let outward_normal = (rec.p - center) / self.radius;
+        let (u, v) = self.get_sphere_uv(outward_normal);
+
+        let mut rec = HitRecord::new(point, Vector3::zero(), root, &self.material, false, u, v);
         rec.set_face_normal(ray, &outward_normal);
 
         return Some(rec);

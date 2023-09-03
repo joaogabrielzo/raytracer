@@ -2,23 +2,36 @@ use crate::{
     interval::Interval,
     material::Surface,
     ray::Ray,
-    vector::{Point, Vector3}, shape::Element,
+    shape::Element,
+    vector::{Point, Vector3},
 };
 
 pub struct HitRecord<'a> {
     pub p: Point,
     pub normal: Vector3,
     pub t: f32,
+    pub u: f32,
+    pub v: f32,
     pub material: &'a Surface,
     pub front_face: bool,
 }
 
 impl<'a> HitRecord<'a> {
-    pub fn new(p: Point, normal: Vector3, t: f32, material: &'a Surface, front_face: bool) -> Self {
+    pub fn new(
+        p: Point,
+        normal: Vector3,
+        t: f32,
+        material: &'a Surface,
+        front_face: bool,
+        u: f32,
+        v: f32,
+    ) -> Self {
         Self {
             p,
             normal,
             t,
+            u,
+            v,
             material,
             front_face,
         }
