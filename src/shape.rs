@@ -42,7 +42,7 @@ impl Sphere {
     }
 
     pub fn center(&self, time: f32) -> Point {
-        return self.center + self.center_vec * time;
+        self.center + self.center_vec * time
     }
 
     fn get_sphere_uv(&self, p: Vector3) -> (f32, f32) {
@@ -97,7 +97,7 @@ impl Hittable for Sphere {
         let mut rec = HitRecord::new(point, Vector3::zero(), root, &self.material, false, u, v);
         rec.set_face_normal(ray, &outward_normal);
 
-        return Some(rec);
+        Some(rec)
     }
 }
 

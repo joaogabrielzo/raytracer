@@ -43,7 +43,7 @@ impl Texture {
             }
             Texture::Image(image) => {
                 // If we have no texture data, then return solid cyan as a debugging aid.
-                if image.height() <= 0 {
+                if image.height() == 0 {
                     return Vector3::new(0., 1., 1.);
                 }
                 // Clamp input texture coordinates to [0,1] x [1,0]
@@ -56,11 +56,11 @@ impl Texture {
                 let pixel = image.get_pixel(i, j);
 
                 let color_scale = 1.0 / 255.0;
-                return Vector3::new(
+                Vector3::new(
                     color_scale * pixel[0] as f32,
                     color_scale * pixel[1] as f32,
                     color_scale * pixel[2] as f32,
-                );
+                )
             }
         }
     }
