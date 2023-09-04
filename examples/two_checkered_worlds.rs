@@ -1,7 +1,7 @@
 use raytracer::{
     camera::Camera,
     hittable::HittableList,
-    material::{Diffuse, Surface},
+    material::Surface,
     shape::{Element, Sphere},
     texture::Texture,
     vector::{Color, Point, Vector3},
@@ -20,12 +20,14 @@ fn main() -> io::Result<()> {
     world.add(Element::Sphere(Sphere::new(
         Color::new(0., -10., 0.),
         10.,
-        Surface::Diffuse(Diffuse::new(checker.clone())),
+        Surface::Diffuse {
+            albedo: checker.clone(),
+        },
     )));
     world.add(Element::Sphere(Sphere::new(
         Vector3::new(0., 10., 0.),
         10.,
-        Surface::Diffuse(Diffuse::new(checker)),
+        Surface::Diffuse { albedo: checker },
     )));
 
     let aspect_ratio = 16.0 / 9.0;

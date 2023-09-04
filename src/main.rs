@@ -1,7 +1,7 @@
 use raytracer::{
     camera::Camera,
     hittable::HittableList,
-    material::{Dielectric, Diffuse, Metal, Surface},
+    material::Surface,
     random, random_rng,
     shape::{Element, Sphere},
     texture::Texture,
@@ -15,7 +15,7 @@ fn main() {
         odd: Color::from_one(0.9),
         scale: 0.32,
     };
-    let material_ground = Surface::Diffuse(Diffuse::new(checker));
+    let material_ground = Surface::Diffuse { albedo: checker };
     let mut world = HittableList::default();
     world.add(Element::Sphere(Sphere::new(
         Point::new(0.0, -1000.0, 0.0),
@@ -29,11 +29,11 @@ fn main() {
             let center = Point::new(a as f32 + 0.9 * random(), 0.2, b as f32 + 0.9 * random());
 
             if (center - Point::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let mut sphere_material = Surface::Diffuse(Diffuse::default());
+                let mut sphere_material = Surface::default();
 
                 if choose_material < 0.8 {
                     let albedo = Texture::SolidColor(Color::random() * Color::random());
-                    sphere_material = Surface::Diffuse(Diffuse::new(albedo));
+                    sphere_material = Surface::Diffuse { albedo };
                     let center2 = center + Vector3::new(0.0, random_rng(0.0, 0.5), 0.0);
                     world.add(Element::Sphere(Sphere::new_moving(
                         center,
@@ -44,32 +44,40 @@ fn main() {
                 } else if choose_material < 0.95 {
                     let albedo = Color::random_rng(0.5, 1.0);
                     let fuzz = random_rng(0.0, 0.5);
-                    sphere_material = Surface::Reflective(Metal::new(albedo, fuzz));
+                    sphere_material = Surface::Reflective { albedo, fuzz };
                     world.add(Element::Sphere(Sphere::new(center, 0.2, sphere_material)));
                 } else {
-                    sphere_material = Surface::Refractive(Dielectric::new(1.5));
+                    sphere_material = Surface::Refractive {
+                        idx_of_refraction: 1.5,
+                    };
                     world.add(Element::Sphere(Sphere::new(center, 0.2, sphere_material)));
                 }
             }
         })
     });
 
-    let material_one = Surface::Refractive(Dielectric::new(1.5));
+    let material_one = Surface::Refractive {
+        idx_of_refraction: 1.5,
+    };
     world.add(Element::Sphere(Sphere::new(
         Point::new(0.0, 1.0, 0.0),
         1.0,
         material_one,
     )));
 
-    let material_two =
-        Surface::Diffuse(Diffuse::new(Texture::SolidColor(Color::new(0.4, 0.2, 0.1))));
+    let material_two = Surface::Diffuse {
+        albedo: Texture::SolidColor(Color::new(0.4, 0.2, 0.1)),
+    };
     world.add(Element::Sphere(Sphere::new(
         Point::new(-4.0, 1.0, 0.0),
         1.0,
         material_two,
     )));
 
-    let material_three = Surface::Reflective(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+    let material_three = Surface::Reflective {
+        albedo: Color::new(0.7, 0.6, 0.5),
+        fuzz: 0.0,
+    };
     world.add(Element::Sphere(Sphere::new(
         Point::new(4.0, 1.0, 0.0),
         1.0,
