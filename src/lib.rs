@@ -5,10 +5,11 @@ pub mod camera;
 pub mod hittable;
 pub mod interval;
 pub mod material;
+pub mod noise;
 pub mod ray;
 pub mod shape;
-pub mod vector;
 pub mod texture;
+pub mod vector;
 
 pub fn dot(fst: &Vector3, snd: &Vector3) -> f32 {
     fst.dot(snd)
@@ -23,6 +24,12 @@ pub fn random_rng(min: f32, max: f32) -> f32 {
 #[inline]
 pub fn random() -> f32 {
     random_rng(0.0, 1.0)
+}
+
+pub fn random_int_rng(min: i32, max: i32) -> i32 {
+    let mut rng = rand::thread_rng();
+
+    rng.gen_range(min..=max)
 }
 
 #[inline]

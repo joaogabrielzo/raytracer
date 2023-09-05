@@ -2,3 +2,4 @@
 img.ppm
 *.ppm
 .DS_Store
+.vscode

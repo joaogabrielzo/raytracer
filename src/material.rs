@@ -37,7 +37,7 @@ impl Material for Surface {
                 }
 
                 let scattered = Ray::new(rec.p, scatter_direction, ray_in.time);
-                Some((scattered, albedo.color(rec.u, rec.v, rec.p)))
+                Some((scattered, albedo.color(rec.u, rec.v, &rec.p)))
             }
             Surface::Reflective { albedo, fuzz } => {
                 let reflected = reflect_ray(&ray_in.direction, &rec.normal);

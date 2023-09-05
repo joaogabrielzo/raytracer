@@ -2,17 +2,17 @@ use std::{io, path::Path};
 
 use image::{DynamicImage, GenericImageView};
 
-use crate::vector::Vector3;
+use crate::{
+    noise::perlin::Perlin,
+    vector::{Color, Point},
+};
 
 #[derive(Clone)]
 pub enum Texture {
-    SolidColor(Vector3),
-    Checkered {
-        even: Vector3,
-        odd: Vector3,
-        scale: f32,
-    },
+    SolidColor(Color),
+    Checkered { even: Color, odd: Color, scale: f32 },
     Image(DynamicImage),
+    Perlin(Perlin),
 }
 impl Texture {
     pub fn load_image<P>(path: P) -> io::Result<Self>
@@ -25,7 +25,8 @@ impl Texture {
 
         Ok(Self::Image(img))
     }
-    pub fn color(&self, u: f32, v: f32, point: Vector3) -> Vector3 {
+
+    pub fn color(&self, u: f32, v: f32, point: &Point) -> Color {
         match self {
             Texture::SolidColor(color) => *color,
             Texture::Checkered { even, odd, scale } => {
@@ -44,7 +45,7 @@ impl Texture {
             Texture::Image(image) => {
                 // If we have no texture data, then return solid cyan as a debugging aid.
                 if image.height() == 0 {
-                    return Vector3::new(0., 1., 1.);
+                    return Color::new(0., 1., 1.);
                 }
                 // Clamp input texture coordinates to [0,1] x [1,0]
                 let u = u.clamp(0.0, 1.0);
@@ -56,18 +57,23 @@ impl Texture {
                 let pixel = image.get_pixel(i, j);
 
                 let color_scale = 1.0 / 255.0;
-                Vector3::new(
+                Color::new(
                     color_scale * pixel[0] as f32,
                     color_scale * pixel[1] as f32,
                     color_scale * pixel[2] as f32,
                 )
             }
+            Texture::Perlin(perlin) => {
+                let noise = perlin.noise(point);
+
+                Color::white() * noise
+            }
         }
     }
 }
 
-impl From<Vector3> for Texture {
-    fn from(value: Vector3) -> Self {
+impl From<Color> for Texture {
+    fn from(value: Color) -> Self {
         Self::SolidColor(value)
     }
 }
