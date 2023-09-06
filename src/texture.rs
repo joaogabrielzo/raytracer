@@ -62,7 +62,7 @@ impl Texture {
                 )
             }
             Texture::Perlin(perlin) => {
-                let noise = perlin.get(((point * 15.) + 1.0 / 2.0).to_array());
+                let noise = perlin.get(((point * 5.) + 1.0 / 2.0).to_array());
 
                 Color::white() * noise as f32
             }
