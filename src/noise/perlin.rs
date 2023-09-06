@@ -91,9 +91,7 @@ impl Perlin {
     fn permute(p: &mut Vec<i32>, n: usize) {
         (0..n).rev().for_each(|i| {
             let target = random_int_rng(0, i as i32) as usize;
-            let tmp = p[i];
-            p[i] = p[target];
-            p[target] = tmp;
+            p.swap(i, target);
         })
     }
 }

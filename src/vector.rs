@@ -108,6 +108,10 @@ impl Vector3 {
         let s = 1.0 * 10.0f32.powf(-8.0);
         (self.x < s) && (self.y < s) && (self.z < s)
     }
+
+    pub fn to_array(&self) -> [f64; 3] {
+        [self.x as f64, self.y as f64, self.z as f64]
+    }
 }
 
 impl Add for Vector3 {
@@ -130,6 +134,18 @@ impl Add<&Vector3> for Vector3 {
             x: self.x + other.x,
             y: self.y + other.y,
             z: self.z + other.z,
+        }
+    }
+}
+
+impl Add<f32> for Vector3 {
+    type Output = Vector3;
+
+    fn add(self, other: f32) -> Vector3 {
+        Vector3 {
+            x: self.x + other,
+            y: self.y + other,
+            z: self.z + other,
         }
     }
 }

@@ -1,11 +1,9 @@
 use std::{io, path::Path};
 
 use image::{DynamicImage, GenericImageView};
+use noise::{Perlin, NoiseFn};
 
-use crate::{
-    noise::perlin::Perlin,
-    vector::{Color, Point},
-};
+use crate::vector::{Color, Point};
 
 #[derive(Clone)]
 pub enum Texture {
@@ -64,9 +62,9 @@ impl Texture {
                 )
             }
             Texture::Perlin(perlin) => {
-                let noise = perlin.noise(point);
+                let noise = perlin.get(((point * 15.) + 1.0 / 2.0).to_array());
 
-                Color::white() * noise
+                Color::white() * noise as f32
             }
         }
     }

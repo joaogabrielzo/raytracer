@@ -1,10 +1,11 @@
+use noise::Perlin;
 use raytracer::{
     camera::Camera,
     hittable::HittableList,
     material::Surface,
     shape::{Element, Sphere},
     texture::Texture,
-    vector::{Point, Vector3}, noise::perlin::Perlin,
+    vector::{Point, Vector3},
 };
 use std::io;
 
@@ -15,7 +16,7 @@ fn main() -> io::Result<()> {
         Point::new(0., -1000., 0.),
         1000.,
         Surface::Diffuse {
-            albedo: Texture::Perlin(Perlin::new()),
+            albedo: Texture::Perlin(Perlin::new(1)),
         },
     )));
 
@@ -23,7 +24,7 @@ fn main() -> io::Result<()> {
         Point::new(0., 2., 0.),
         2.,
         Surface::Diffuse {
-            albedo: Texture::Perlin(Perlin::new()),
+            albedo: Texture::Perlin(Perlin::new(1)),
         },
     )));
 
