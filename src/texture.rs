@@ -1,7 +1,7 @@
 use std::{io, path::Path};
 
 use image::{DynamicImage, GenericImageView};
-use noise::{Perlin, NoiseFn};
+use noise::{NoiseFn, Perlin, Turbulence};
 
 use crate::vector::{Color, Point};
 
@@ -11,6 +11,7 @@ pub enum Texture {
     Checkered { even: Color, odd: Color, scale: f32 },
     Image(DynamicImage),
     Perlin(Perlin),
+    Turbulence(Perlin),
 }
 impl Texture {
     pub fn load_image<P>(path: P) -> io::Result<Self>
@@ -65,6 +66,11 @@ impl Texture {
                 let noise = perlin.get(((point * 5.) + 1.0 / 2.0).to_array());
 
                 Color::white() * noise as f32
+            }
+            Texture::Turbulence(perlin) => {
+                let noise = Turbulence::<_, Perlin>::new(perlin);
+
+                Color::white() * noise.get(point.to_array()) as f32 + 1.0 / 2.0
             }
         }
     }
