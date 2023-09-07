@@ -10,7 +10,7 @@ pub enum Texture {
     SolidColor(Color),
     Checkered { even: Color, odd: Color, scale: f32 },
     Image(DynamicImage),
-    Perlin(Perlin),
+    Perlin(crate::noise::perlin::Perlin),
     Turbulence(Perlin),
 }
 impl Texture {
@@ -63,9 +63,11 @@ impl Texture {
                 )
             }
             Texture::Perlin(perlin) => {
-                let noise = perlin.get(((point * 5.) + 1.0 / 2.0).to_array());
+                // let noise = perlin.get(((point * 5.) + 1.0 / 2.0).to_array());
 
-                Color::white() * noise as f32
+                let noise = perlin.improved_noise(point);
+
+                Color::white() * noise
             }
             Texture::Turbulence(perlin) => {
                 let noise = Turbulence::<_, Perlin>::new(perlin);

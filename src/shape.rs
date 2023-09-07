@@ -1,7 +1,6 @@
 use std::f32::consts::PI;
 
 use crate::{
-    dot,
     hittable::{HitRecord, Hittable},
     interval::Interval,
     material::Surface,
@@ -70,21 +69,20 @@ impl Hittable for Sphere {
             self.center
         };
         let oc = ray.origin - center;
-        let a = dot(&ray.direction, &ray.direction); //a vector dotted with itself is equal to the squared length of that vector.
-        let b = 2.0 * dot(&oc, &ray.direction);
-        let c = dot(&oc, &oc) - self.radius_squared;
-        let discriminant = b * b - 4.0 * a * c;
+        let a = ray.direction.length_squared(); //a vector dotted with itself is equal to the squared length of that vector.
+        let half_b = oc.dot(&ray.direction);
+        let c = oc.length_squared() - self.radius_squared;
+        let discriminant = half_b * half_b - a * c;
 
         if discriminant < 0.0 {
             return None;
         }
         let sqrtd = discriminant.sqrt();
 
-        let mut root = (-b - sqrtd) // Quadratic formula
-                            / (2.0 * a);
-        if root <= ray_t.min || root >= ray_t.max {
-            root = (-b + sqrtd) / (2.0 * a);
-            if root <= ray_t.min || root >= ray_t.max {
+        let mut root = (-half_b - sqrtd) / a;
+        if !ray_t.contains(root) {
+            root = (-half_b + sqrtd) / a;
+            if !ray_t.contains(root) {
                 return None;
             }
         }
@@ -94,7 +92,7 @@ impl Hittable for Sphere {
 
         let (u, v) = self.get_sphere_uv(outward_normal);
 
-        let mut rec = HitRecord::new(point, Vector3::zero(), root, &self.material, false, u, v);
+        let mut rec = HitRecord::new(point, outward_normal, root, &self.material, false, u, v);
         rec.set_face_normal(ray, &outward_normal);
 
         Some(rec)
