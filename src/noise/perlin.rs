@@ -1,13 +1,9 @@
 use crate::{grad, lerp, vector::Point};
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Perlin;
 
 impl Perlin {
-    pub fn new() -> Self {
-        Self
-    }
-
     #[rustfmt::skip]
     pub fn improved_noise(&self, p: &Point) -> f32 {
         let x =p.x - p.x.floor(); // Find relative x, y, z
@@ -33,17 +29,31 @@ impl Perlin {
         let ba = p[b] as usize + zz;
         let bb = p[b + 1] as usize + zz;
 
-        return lerp(w, lerp(v, lerp(u, grad(p[aa  ], x  , y  , z   ),  // AND ADD
+        lerp(w, lerp(v, lerp(u, grad(p[aa  ], x  , y  , z   ),  // AND ADD
                                      grad(p[ba  ], x-1., y  , z   )), // BLENDED
                              lerp(u, grad(p[ab  ], x  , y-1., z   ),  // RESULTS
                                      grad(p[bb  ], x-1., y-1., z   ))),// FROM  8
                      lerp(v, lerp(u, grad(p[aa+1], x  , y  , z-1. ),  // CORNERS
                                      grad(p[ba+1], x-1., y  , z-1. )), // OF CUBE
                              lerp(u, grad(p[ab+1], x  , y-1., z-1. ),
-                                     grad(p[bb+1], x-1., y-1., z-1. ))));
+                                     grad(p[bb+1], x-1., y-1., z-1. ))))
     }
 
-    fn permute(p: &mut Vec<i32>) {
+    pub fn turbulence(&self, p: &Point, depth: usize) -> f32 {
+        let mut accum = 0.0;
+        let mut temp_p = *p;
+        let mut weight = 1.0;
+
+        (0..depth).for_each(|_| {
+            accum += weight * self.improved_noise(&temp_p);
+            weight *= 0.5;
+            temp_p = temp_p * 2.0;
+        });
+
+        accum.abs()
+    }
+
+    fn permute(p: &mut [i32]) {
         for i in 0..256 {
             p[i] = Self::PERMUTATION[i];
             p[256 + i] = p[i];

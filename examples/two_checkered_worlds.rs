@@ -2,7 +2,7 @@ use raytracer::{
     camera::Camera,
     hittable::HittableList,
     material::Surface,
-    shape::{Element, Sphere},
+    shape::{sphere::Sphere, Element},
     texture::Texture,
     vector::{Color, Point, Vector3},
 };

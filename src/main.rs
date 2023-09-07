@@ -3,7 +3,7 @@ use raytracer::{
     hittable::HittableList,
     material::Surface,
     random, random_rng,
-    shape::{Element, Sphere},
+    shape::{sphere::Sphere, Element},
     texture::Texture,
     vector::{Color, Point, Vector3},
 };

@@ -3,7 +3,7 @@ use raytracer::{
     hittable::HittableList,
     material::Surface,
     noise::perlin::Perlin,
-    shape::{Element, Sphere},
+    shape::{sphere::Sphere, Element},
     texture::Texture,
     vector::{Point, Vector3},
 };
@@ -16,7 +16,7 @@ fn main() -> io::Result<()> {
         Point::new(0., -1000., 0.),
         1000.,
         Surface::Diffuse {
-            albedo: Texture::Perlin(Perlin::new()),
+            albedo: Texture::Perlin(Perlin),
         },
     )));
 
@@ -24,8 +24,7 @@ fn main() -> io::Result<()> {
         Point::new(0., 2., 0.),
         2.,
         Surface::Diffuse {
-            // albedo: Texture::Perlin(Perlin::new(1)),
-            albedo: Texture::Perlin(raytracer::noise::perlin::Perlin::new()),
+            albedo: Texture::Turbulence(Perlin),
         },
     )));
 
