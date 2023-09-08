@@ -105,7 +105,7 @@ impl Vector3 {
     }
 
     pub fn near_zero(&self) -> bool {
-        let s = 1.0 * 10.0f32.powf(-8.0);
+        let s = 1.0 * 10.0f32.powf(-8.0); // 1e-8
         (self.x < s) && (self.y < s) && (self.z < s)
     }
 
