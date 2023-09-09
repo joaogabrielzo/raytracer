@@ -39,11 +39,11 @@ impl Quad {
         // Given the hit point in plane coordinates, return false if it is outside the
         // primitive, otherwise returns hit record UV coordinates and return true.
 
-        if a < 0. || a > 1. || b < 0. || b > 1. {
+        if !(0. ..=1.).contains(&a) || !(0. ..=1.).contains(&b) {
             return (0., 0.);
         }
 
-        return (a, b);
+        (a, b)
     }
 }
 

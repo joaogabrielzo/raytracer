@@ -4,7 +4,7 @@ use raytracer::{
     material::Surface,
     shape::{sphere::Sphere, Element},
     texture::Texture,
-    vector::{Point, Vector3, Color},
+    vector::{Color, Point, Vector3},
 };
 use std::io;
 
@@ -44,7 +44,7 @@ fn main() -> io::Result<()> {
         view_up,
         defocus_angle,
         focus_dist,
-        background
+        background,
     );
 
     camera.render(&world);

@@ -12,7 +12,7 @@ use std::io;
 fn main() -> io::Result<()> {
     let mut world = HittableList::default();
 
-    let pertext = Texture::Turbulence(Perlin::default());
+    let pertext = Texture::Turbulence(Perlin);
 
     world.add(Element::Sphere(Sphere::new(
         Point::new(0., -1000., 0.),

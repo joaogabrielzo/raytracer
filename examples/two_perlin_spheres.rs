@@ -5,7 +5,7 @@ use raytracer::{
     noise::perlin::Perlin,
     shape::{sphere::Sphere, Element},
     texture::Texture,
-    vector::{Point, Vector3, Color},
+    vector::{Color, Point, Vector3},
 };
 use std::io;
 

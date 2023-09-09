@@ -168,7 +168,7 @@ impl Camera {
             return emission_color * 30. + scatter_color;
         }
 
-        return self.background;
+        self.background
     }
 
     fn defocus_disk_sample(&self) -> Point {
