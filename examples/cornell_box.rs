@@ -2,7 +2,7 @@ use raytracer::{
     camera::Camera,
     hittable::HittableList,
     material::Surface,
-    shape::{Element, Quad},
+    shape::{a_box::a_box, Element, Quad},
     texture::Texture,
     vector::{Color, Point, Vector3},
 };
@@ -56,8 +56,30 @@ fn main() -> io::Result<()> {
         Point::new(0., 0., 555.),
         Vector3::new(555., 0., 0.),
         Vector3::new(0., 555., 0.),
-        white,
+        white.clone(),
     )));
+
+    let box1 = Element::Box(a_box(
+        &Point::zero(),
+        &Point::new(165., 165., 165.),
+        white.clone(),
+    ));
+    let rotated_box1 = Element::new_rotate_y(-18., box1);
+    world.add(Element::Translate {
+        offset: Vector3::new(130., 0., 65.),
+        object: Box::new(rotated_box1),
+    });
+
+    let box2 = Element::Box(a_box(
+        &Point::zero(),
+        &Point::new(165., 330., 165.),
+        white.clone(),
+    ));
+    let rotated_box2 = Element::new_rotate_y(15., box2);
+    world.add(Element::Translate {
+        offset: Vector3::new(265., 0., 295.),
+        object: Box::new(rotated_box2),
+    });
 
     let aspect_ratio = 1.0;
     let image_width = 600;
