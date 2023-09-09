@@ -97,6 +97,8 @@ fn main() {
     let defocus_angle = 0.6;
     let focus_dist = 10.0;
 
+    let background = Color::new(0.7, 0.8, 1.);
+
     let camera = Camera::new(
         aspect_ratio,
         image_width,
@@ -108,6 +110,7 @@ fn main() {
         view_up,
         defocus_angle,
         focus_dist,
+        background,
     );
 
     camera.render(&world);

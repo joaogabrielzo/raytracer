@@ -38,7 +38,7 @@ fn main() -> io::Result<()> {
 
     let aspect_ratio = 1.0;
     let image_width = 400;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 500;
     let max_depth = 50;
 
     let fov = 80.0;
@@ -48,6 +48,8 @@ fn main() -> io::Result<()> {
 
     let defocus_angle = 0.0;
     let focus_dist = 10.0;
+
+    let background = Color::new(0.7, 0.8, 1.);
 
     let camera = Camera::new(
         aspect_ratio,
@@ -60,6 +62,7 @@ fn main() -> io::Result<()> {
         view_up,
         defocus_angle,
         focus_dist,
+        background
     );
 
     camera.render(&world);

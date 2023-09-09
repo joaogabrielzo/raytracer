@@ -23,6 +23,7 @@ pub struct Camera {
     defocus_angle: f32,
     defocus_disk_u: Vector3,
     defocus_disk_v: Vector3,
+    background: Color,
 }
 
 impl Camera {
@@ -37,6 +38,7 @@ impl Camera {
         view_up: Vector3,
         defocus_angle: f32,
         focus_dist: f32,
+        background: Color,
     ) -> Camera {
         let f32_width = image_width as f32;
         let image_height = (f32_width / aspect_ratio) as u32;
@@ -84,6 +86,7 @@ impl Camera {
             defocus_angle,
             defocus_disk_u,
             defocus_disk_v,
+            background,
         }
     }
 
@@ -103,7 +106,7 @@ impl Camera {
                 let pixel_color: Color = (0..self.samples_per_pixel)
                     .map(|_| {
                         let ray = self.get_ray(u, v);
-                        Self::ray_color(&ray, world, self.max_depth)
+                        self.ray_color(&ray, world, self.max_depth)
                     })
                     .sum::<Vector3>()
                     * scale_factor;
@@ -116,25 +119,12 @@ impl Camera {
                     256.0 * intensity.clamp(pixel_color.z),
                 );
 
-                format!("{} {} {}", color.x as u32, color.y as u32, color.z as u32)
+                format!("{} {} {}", color.x as u8, color.y as u8, color.z as u8)
             })
             .collect::<Vec<String>>()
             .join("\n");
 
         println!("{pixels}");
-
-        // (0..self.image_height).for_each(|v| {
-        //     (0..self.image_width).for_each(|u| {
-        //         let pixel_color: Color = (0..self.samples_per_pixel)
-        //             .map(|_| {
-        //                 let ray = self.get_ray(u, v);
-        //                 Self::ray_color(&ray, world, self.max_depth)
-        //             })
-        //             .sum();
-
-        //         pixel_color.write(self.samples_per_pixel as f32);
-        //     })
-        // });
     }
 
     fn get_ray(&self, u: u32, v: u32) -> Ray {
@@ -160,23 +150,25 @@ impl Camera {
         (self.pixel_delta_u * px) + (self.pixel_delta_v * py)
     }
 
-    fn ray_color(ray: &Ray, world: &HittableList, depth: u32) -> Color {
+    fn ray_color(&self, ray: &Ray, world: &HittableList, depth: u32) -> Color {
         if depth == 0 {
             return Color::black();
         }
 
         if let Some(rec) = world.hit(ray, &(0.001, f32::MAX).into()) {
-            if let Some((scattered, attenuation)) = rec.material.scatter(ray, &rec) {
-                return attenuation * Self::ray_color(&scattered, world, depth - 1);
+            let emission_color = rec.material.emitted(rec.u, rec.v, &rec.p);
+
+            let Some((scattered, attenuation)) = rec.material.scatter(ray, &rec)
+            else {
+                return emission_color;
             };
-            return Color::black();
+
+            let scatter_color = attenuation * self.ray_color(&scattered, world, depth - 1);
+
+            return emission_color * 30. + scatter_color;
         }
 
-        let unit_direction = ray.direction.unit();
-        let a = 0.5 * (unit_direction.y + 1.0);
-
-        // LERP -> (1 - a) * startValue + a * endValue
-        (1.0 - a) * Color::white() + a * Color::new(0.5, 0.7, 1.0)
+        return self.background;
     }
 
     fn defocus_disk_sample(&self) -> Point {

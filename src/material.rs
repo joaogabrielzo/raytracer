@@ -5,11 +5,15 @@ use crate::{
     ray::Ray,
     reflect_ray, refract_ray,
     texture::Texture,
-    vector::{Color, Vector3},
+    vector::{Color, Point, Vector3},
 };
 
 pub trait Material: Sync {
     fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Ray, Color)>;
+    #[allow(unused_variables)]
+    fn emitted(&self, u: f32, v: f32, point: &Point) -> Color {
+        Color::black()
+    }
 }
 
 #[derive(Clone)]
@@ -17,6 +21,7 @@ pub enum Surface {
     Diffuse { albedo: Texture },
     Reflective { albedo: Color, fuzz: f32 },
     Refractive { idx_of_refraction: f32 },
+    DiffuseLight(Texture),
 }
 
 impl Default for Surface {
@@ -77,7 +82,29 @@ impl Material for Surface {
 
                 Some((scattered, Color::white()))
             }
+            Surface::DiffuseLight(_) => None,
         }
+    }
+
+    fn emitted(&self, u: f32, v: f32, point: &Point) -> Color {
+        match self {
+            Surface::DiffuseLight(emit) => emit.color(u, v, point),
+            _ => Color::black(),
+        }
+    }
+}
+
+struct DiffuseLight {
+    pub emit: Texture,
+}
+
+impl Material for DiffuseLight {
+    fn scatter(&self, _ray_in: &Ray, _rec: &HitRecord) -> Option<(Ray, Color)> {
+        None
+    }
+
+    fn emitted(&self, u: f32, v: f32, p: &Point) -> Color {
+        self.emit.color(u, v, p)
     }
 }
 
